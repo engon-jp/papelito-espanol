@@ -181,13 +181,125 @@
   .btn.secondary{background:var(--teal); box-shadow:0 4px 0 var(--teal-d);}
   .btn.secondary:active{box-shadow:0 1px 0 var(--teal-d);}
   .btn.audio{
-    flex:0 0 68px; background:var(--sun); box-shadow:0 4px 0 var(--sun-d);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+    flex:0 0 72px; background:var(--sun); box-shadow:0 4px 0 var(--sun-d); color:#5a3a12;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0;
   }
-  .btn.audio .audio-ico{font-size:1.3rem; line-height:1;}
-  .btn.audio .audio-label{font-size:.56rem; font-weight:800; line-height:1; letter-spacing:.01em;}
+  .btn.audio .audio-ico{font-size:1.3rem; line-height:1.1;}
+  .btn.audio .audio-label{font-size:.78rem; font-weight:900; line-height:1; letter-spacing:.02em;}
   .btn.audio:active{box-shadow:0 1px 0 var(--sun-d);}
   .btn:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:0 4px 0 rgba(0,0,0,.12);}
+
+  /* 参照ボタンバー（主語人称代名詞・活用表） */
+  .ref-bar{display:flex; gap:10px; margin-top:4px;}
+  .ref-btn{
+    flex:1; min-height:44px; padding:6px 8px; cursor:pointer; font-family:inherit;
+    font-size:.82rem; font-weight:800; color:var(--teal-d);
+    background:#fff; border:2px solid #bfe6e0; border-radius:13px; box-shadow:0 3px 0 #cdeae5;
+    display:inline-flex; align-items:center; justify-content:center; gap:5px; transition:.1s;
+  }
+  .ref-btn .ref-ico{font-size:1rem;}
+  .ref-btn:active{transform:translateY(2px); box-shadow:0 1px 0 #cdeae5;}
+  .ref-btn[hidden]{display:none;}
+
+  /* 参照ビュー（全画面：活用表・人称代名詞表） */
+  .refview{
+    position:fixed; inset:0; z-index:70; display:none; overflow-y:auto;
+    background:linear-gradient(180deg,#cfe9ef 0%, #ffe6cf 42%, #fff9f0 78%);
+  }
+  .refview.show{display:block; animation:fadein .2s ease;}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  .refview-inner{max-width:560px; margin:0 auto; padding:42px 16px 32px; min-height:100%;}
+  .ref-back{
+    appearance:none; font-family:inherit; cursor:pointer; margin-bottom:14px;
+    font-size:.94rem; font-weight:800; color:#fff; background:var(--teal);
+    border:none; border-radius:13px; padding:9px 16px; box-shadow:0 4px 0 var(--teal-d);
+  }
+  .ref-back:active{transform:translateY(3px); box-shadow:0 1px 0 var(--teal-d);}
+
+  .ref-card{
+    background:var(--paper); border-radius:22px; box-shadow:var(--shadow); border:2px solid #fff;
+    padding:16px 14px 18px; margin-bottom:18px; position:relative; overflow:hidden;
+  }
+  .ref-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:6px;
+    background:repeating-linear-gradient(90deg,var(--terra) 0 14px,var(--sun) 14px 28px,var(--teal) 28px 42px);
+  }
+  .ref-title{font-size:1.05rem; font-weight:900; color:var(--ink); margin:6px 0 12px; display:flex; align-items:center; gap:6px;}
+  .ref-title .diamond{color:var(--terra);}
+  .ref-title small{font-weight:600; color:var(--muted); font-size:.78rem;}
+
+  table.conj-table{width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed;}
+  .conj-table th, .conj-table td{border:1.5px solid var(--line); padding:7px 5px; vertical-align:middle;}
+  .conj-table thead th{background:var(--cream); font-size:.76rem; font-weight:800; color:var(--muted); text-align:center;}
+  .conj-table thead th:first-child{background:transparent; border:none; width:3em;}
+  .conj-table tbody th{background:#fff7ea; font-size:.72rem; font-weight:800; color:var(--terra-d); text-align:center; white-space:nowrap; padding:7px 2px;}
+  .conj-table td{text-align:left;}
+  .conj-table td .row{display:flex; align-items:baseline; gap:5px; padding:1px 0; flex-wrap:wrap;}
+  .conj-table td .pron{color:var(--muted); font-size:.8rem; min-width:0;}
+  .conj-table td .es{color:var(--terra-d); font-weight:800; font-size:1.02rem; letter-spacing:0;}
+  .conj-table td .es .end{border-bottom:2px solid currentColor; padding-bottom:1px;}
+  .conj-table td .gloss{color:var(--muted); font-size:.76rem;}
+  .conj-table td .stack{display:flex; flex-direction:column; gap:2px;}
+  .conj-table.pron-table td .es{display:inline-block; min-width:3.2em;}
+  /* 活用セル：主語（かっこ）を上、活用形を下に縦並びにして枠内に収める */
+  .conj-table td .conj-cell{display:flex; flex-direction:column; align-items:flex-start; gap:2px;}
+  .conj-table td .conj-cell .stack{gap:0; flex-direction:row; flex-wrap:wrap; column-gap:4px;}
+  .ref-hint{font-size:.74rem; color:var(--muted); text-align:center; margin-top:10px;}
+
+  /* 単語チェック・タブ（レベルの下） */
+  .vocab-tab{
+    width:100%; margin:0 0 10px; min-height:46px; cursor:pointer; font-family:inherit;
+    font-size:.96rem; font-weight:800; color:#fff; background:var(--teal);
+    border:none; border-radius:14px; box-shadow:0 4px 0 var(--teal-d);
+    display:flex; align-items:center; justify-content:center; gap:7px; transition:.1s;
+  }
+  .vocab-tab .vt-ico{font-size:1.05rem;}
+  .vocab-tab:active{transform:translateY(3px); box-shadow:0 1px 0 var(--teal-d);}
+
+  /* ← 前問ボタン */
+  .btn.btn-prev{
+    flex:0 0 54px; background:var(--paper); color:var(--muted);
+    border:2px solid #ead9c0; box-shadow:0 4px 0 #e0d0b8; font-size:.9rem;
+  }
+  .btn.btn-prev:active{box-shadow:0 1px 0 #e0d0b8;}
+  .btn.btn-prev:disabled{opacity:.3; cursor:not-allowed; transform:none; box-shadow:0 4px 0 #e0d0b8;}
+
+  /* 単語チェック・ビュー */
+  .vocab-h{font-size:1.2rem; font-weight:900; color:var(--ink); margin:2px 0 14px; display:flex; align-items:center; gap:7px;}
+  .vocab-modes{display:flex; gap:10px; margin-bottom:14px;}
+  .seg{flex:1; display:flex; background:#fff; border:2px solid #ead9c0; border-radius:12px; padding:3px; gap:3px;}
+  .seg button{
+    flex:1; min-height:38px; cursor:pointer; font-family:inherit; font-size:.82rem; font-weight:800;
+    color:var(--muted); background:transparent; border:none; border-radius:9px; transition:.12s;
+  }
+  .seg button.active{background:var(--terra); color:#fff;}
+  .vocab-progress{text-align:center; font-size:.84rem; color:var(--muted); margin-bottom:10px;}
+  .vocab-progress b{color:var(--ink); font-size:1rem;}
+
+  .flashcard{
+    background:var(--paper); border-radius:22px; box-shadow:var(--shadow); border:2px solid #fff;
+    min-height:200px; padding:24px 18px; margin-bottom:16px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+    position:relative; overflow:hidden; text-align:center;
+  }
+  .flashcard::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:6px;
+    background:repeating-linear-gradient(90deg,var(--terra) 0 14px,var(--sun) 14px 28px,var(--teal) 28px 42px);
+  }
+  .fc-cat{font-size:.74rem; color:var(--muted); min-height:1.2em;}
+  .fc-ans-cat{display:block; font-size:.74rem; color:var(--muted); margin-bottom:4px;}
+  .fc-prompt{font-size:1.9rem; font-weight:900; color:var(--ink); line-height:1.25;}
+  .fc-answer{display:none; font-size:1.5rem; font-weight:800; color:var(--terra-d); line-height:1.3;
+    padding-top:12px; border-top:2px dashed var(--line); width:100%;}
+  .fc-answer .tag{display:inline-block; font-size:.78rem; font-weight:800; color:var(--teal-d);
+    background:#e6f6f3; border-radius:7px; padding:1px 6px; margin:0 4px; vertical-align:middle;}
+  .flashcard.revealed .fc-answer{display:block; animation:pop .3s cubic-bezier(.22,1.4,.5,1);}
+  .fc-hint{font-size:.76rem; color:var(--muted);}
+  .flashcard.revealed .fc-hint{display:none;}
+
+  .vocab-nav{display:flex; gap:11px;}
+  .vocab-nav .btn{min-height:50px;}
+  .vocab-nav .btn.secondary{flex:0 0 40%;}
 
   /* 選択肢ポップアップ */
   .overlay{
@@ -295,6 +407,8 @@
     <button data-level="4">Nivel 4<small>レベル4</small></button>
   </nav>
 
+  <button class="vocab-tab" id="btn-vocab"><span class="vt-ico">📝</span>単語チェック</button>
+
   <main class="card">
     <div class="ja" id="ja">…</div>
     <div class="hint" id="hint"></div>
@@ -302,22 +416,28 @@
     <div class="sentence" id="sentence"></div>
 
     <div class="accents-wrap" id="accents-wrap" style="display:none">
-      <div class="accents-label">特殊文字の入力はこちら</div>
+      <div class="accents-label">特殊文字と記号の入力はこちら</div>
       <div class="accents" id="accents">
         <button data-ch="á">á</button><button data-ch="é">é</button><button data-ch="í">í</button>
         <button data-ch="ó">ó</button><button data-ch="ú">ú</button><button data-ch="ñ">ñ</button>
-        <button data-ch="¿">¿</button><button data-ch="?">?</button>
+        <button data-ch="¿">¿</button><button data-ch="?">?</button><button data-ch=".">.</button>
       </div>
     </div>
 
     <div class="feedback" id="feedback"></div>
 
     <div class="actions">
-      <button class="btn" id="btn-answer">回答する</button>
+      <button class="btn btn-prev" id="btn-prev" disabled>← 前</button>
+      <button class="btn" id="btn-answer">解答する</button>
       <button class="btn secondary" id="btn-next" style="display:none">次の問題 →</button>
       <button class="btn audio" id="btn-audio" disabled title="音声を再生">
-        <span class="audio-ico">🔊</span><span class="audio-label">音声再生</span>
+        <span class="audio-ico">🔊</span><span class="audio-label">音声</span>
       </button>
+    </div>
+
+    <div class="ref-bar" id="ref-bar">
+      <button class="ref-btn" id="btn-ref-pron"><span class="ref-ico">📋</span>主語人称代名詞</button>
+      <button class="ref-btn" id="btn-ref-verb"><span class="ref-ico">📖</span><span id="ref-verb-label">活用</span></button>
     </div>
   </main>
 
@@ -329,6 +449,45 @@
   <div class="sheet">
     <h3 id="sheet-title">選んでください</h3>
     <div class="opts" id="opts"></div>
+  </div>
+</div>
+
+<!-- 参照ビュー（活用表・人称代名詞表） -->
+<div class="refview" id="refview">
+  <div class="bunting"></div>
+  <div class="refview-inner">
+    <button class="ref-back" id="ref-back">← もどる</button>
+    <div class="ref-content" id="ref-content"></div>
+  </div>
+</div>
+
+<!-- 単語チェック（フラッシュカード） -->
+<div class="refview" id="vocabview">
+  <div class="bunting"></div>
+  <div class="refview-inner">
+    <button class="ref-back" id="vocab-back">← もどる</button>
+    <h2 class="vocab-h"><span class="vt-ico">📝</span>単語チェック</h2>
+    <div class="vocab-modes">
+      <div class="seg" id="seg-dir">
+        <button data-dir="es" class="active">西 → 日</button>
+        <button data-dir="ja">日 → 西</button>
+      </div>
+      <div class="seg" id="seg-order">
+        <button data-order="seq" class="active">順番</button>
+        <button data-order="rand">ランダム</button>
+      </div>
+    </div>
+    <div class="vocab-progress"><b id="vocab-pos">1</b> / <span id="vocab-total">37</span></div>
+    <div class="flashcard" id="flashcard">
+      <div class="fc-cat" id="fc-cat"></div>
+      <div class="fc-prompt" id="fc-prompt"></div>
+      <div class="fc-answer" id="fc-answer"></div>
+      <div class="fc-hint" id="fc-hint">タップで答えを表示</div>
+    </div>
+    <div class="vocab-nav">
+      <button class="btn secondary" id="vocab-prev">← 前</button>
+      <button class="btn" id="vocab-next">次へ →</button>
+    </div>
   </div>
 </div>
 
@@ -357,6 +516,58 @@ const OBJECT_POOLS = {
 };
 
 const ALL_VERBS = Object.keys(OBJECT_POOLS);
+
+// 動詞の日本語訳（活用表のタイトル用）
+const VERB_JA = {
+  hablar:"話す", comer:"食べる", vivir:"住む", estudiar:"勉強する", beber:"飲む",
+  abrir:"開ける", comprar:"買う", leer:"読む", escribir:"書く",
+};
+
+// 単語チェック用の語彙（指定順）。g は性別/種別タグ（動詞は空）
+const VOCAB = [
+  // 動詞
+  {es:"hablar", ja:"話す"},
+  {es:"comer", ja:"食べる"},
+  {es:"vivir", ja:"住む、生きる"},
+  {es:"estudiar", ja:"勉強する"},
+  {es:"beber", ja:"飲む"},
+  {es:"abrir", ja:"開ける、開く"},
+  {es:"comprar", ja:"買う"},
+  {es:"leer", ja:"読む"},
+  {es:"escribir", ja:"書く"},
+  // 名詞：言語
+  {es:"español", ja:"スペイン語", g:"男"},
+  {es:"inglés", ja:"英語", g:"男"},
+  {es:"japonés", ja:"日本語", g:"男"},
+  {es:"chino", ja:"中国語", g:"男"},
+  // 名詞：食べもの・飲みもの
+  {es:"tomate", ja:"トマト", g:"男"},
+  {es:"huevo", ja:"たまご", g:"男"},
+  {es:"naranja", ja:"オレンジ", g:"女"},
+  {es:"manzana", ja:"りんご", g:"女"},
+  {es:"agua", ja:"水", g:"女"},
+  {es:"vino", ja:"ワイン", g:"男"},
+  {es:"cerveza", ja:"ビール", g:"女"},
+  {es:"leche", ja:"牛乳", g:"女"},
+  // 名詞：都市名
+  {es:"Tokio", ja:"東京", g:"固有"},
+  {es:"Madrid", ja:"マドリード（スペインの首都）", g:"固有"},
+  {es:"Barcelona", ja:"バルセロナ（スペインの都市）", g:"固有"},
+  {es:"Buenos Aires", ja:"ブエノスアイレス（アルゼンチンの首都）", g:"固有"},
+  // 名詞：その他
+  {es:"coche", ja:"車", g:"男"},
+  {es:"bicicleta", ja:"自転車", g:"女"},
+  {es:"flor", ja:"花", g:"女"},
+  {es:"regalo", ja:"プレゼント", g:"男"},
+  {es:"libro", ja:"本", g:"男"},
+  {es:"revista", ja:"雑誌", g:"女"},
+  {es:"novela", ja:"小説", g:"女"},
+  {es:"periódico", ja:"新聞", g:"男"},
+  {es:"carta", ja:"手紙", g:"女"},
+  {es:"correo", ja:"メール、郵便", g:"男"},
+  {es:"mensaje", ja:"メッセージ", g:"男"},
+  {es:"postal", ja:"絵はがき", g:"女"},
+];
 
 // マスターデータ（全48問）。#36 は仕様書の誤記を修正済み（Ellas escriben un mensaje.）
 const MASTER = [
@@ -665,6 +876,28 @@ function nextQuestion(){
   loadCurrent();
 }
 
+// 前の問題に戻って正解を確認（スコアに影響しない）
+function historyBack(){
+  const r = curRound();
+  if(r.pos === 0) return;
+  r.pos--;
+  state.current = MASTER[r.queue[r.pos]];
+  state.P = parsePhrase(state.current.es);
+  state.isAnswered = false;
+  state.sel = {subject:null, verb:null, object:null};
+  render(); // 通常描画でUIをリセット
+  // 即座に正解を表示（採点なし）
+  state.isAnswered = true;
+  btnAnswer.style.display = "none";
+  btnNext.style.display = "";
+  btnAudio.disabled = false;
+  elFeedback.className = "feedback show ok";
+  elFeedback.innerHTML = '📖 前の問題の正解：<span class="correct">'
+    + state.current.es + '<small>' + state.current.ja + '</small></span>';
+  if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; }
+  save();
+}
+
 
 /* =========================================================================
    5. 描画
@@ -674,7 +907,10 @@ const elJa = $("ja"), elHint = $("hint"), elSentence = $("sentence"),
       elAccents = $("accents"), elAccentsWrap = $("accents-wrap"), elFeedback = $("feedback"),
       elProgress = $("progress"), elScore = $("score"),
       elProgressBar = $("progress-bar"), elMascot = $("mascot"), elConfetti = $("confetti"),
-      btnAnswer = $("btn-answer"), btnNext = $("btn-next"), btnAudio = $("btn-audio");
+      btnAnswer = $("btn-answer"), btnNext = $("btn-next"), btnAudio = $("btn-audio"),
+      btnPrev = $("btn-prev"),
+      btnRefPron = $("btn-ref-pron"), btnRefVerb = $("btn-ref-verb"), refVerbLabel = $("ref-verb-label"),
+      elRefview = $("refview"), elRefContent = $("ref-content");
 
 // マスコットの表情切替（idle / happy / sad）
 function setMascot(mood){
@@ -707,7 +943,7 @@ const HINTS = {
   1:"空欄をタップして選びましょう",
   2:"空欄に直接入力しましょう（アクセントも正確に）",
   3:"主語と動詞は入力、目的語はタップで選択",
-  4:"全文をスペイン語で書きましょう（アクセントも正確に）",
+  4:"全文をスペイン語で書きましょう（ピリオド・疑問符・アクセント符号なども正確に）",
 };
 
 function render(){
@@ -732,6 +968,12 @@ function render(){
   btnAnswer.disabled = false;
   btnNext.style.display = "none";
   btnAudio.disabled = true;
+  btnPrev.disabled = (r.pos === 0); // ラウンド最初は戻れない
+
+  // 参照ボタン（主語人称代名詞・活用表）：Nivel 1/2 は常時表示、Nivel 3/4 は解答後に表示
+  refVerbLabel.textContent = current.verb + "の活用";
+  btnRefVerb.hidden = (level >= 3); // 3/4 は解答後に finishAnswer で表示
+  btnRefPron.hidden = (level >= 3);
 
   // 文テンプレート
   elSentence.innerHTML = "";
@@ -827,7 +1069,7 @@ function renderLevel4(){
   const ta = document.createElement("textarea");
   ta.className = "full-in";
   ta.id = "full-in";
-  ta.placeholder = "スペイン語で全文を入力（¿ ? や記号も）";
+  ta.placeholder = "スペイン語で全文を入力";
   ta.autocapitalize = "off"; ta.autocomplete = "off";
   ta.autocorrect = "off"; ta.spellcheck = false;
   ta.addEventListener("focus", ()=>{ lastFocused = ta; });
@@ -966,8 +1208,113 @@ function finishAnswer(ok){
   btnAnswer.style.display = "none";
   btnNext.style.display = "";
   btnAudio.disabled = false;
+  if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; } // Nivel 3/4 は解答後に参照ボタンを表示
   save();
 }
+
+
+/* =========================================================================
+   7.5 参照ビュー（主語人称代名詞・動詞活用表）
+   ========================================================================= */
+// 主語人称代名詞の表
+function buildPronounTable(){
+  const c = (es, ja) => '<div class="row"><span class="es">'+es+'</span>'+(ja?'<span class="gloss">'+ja+'</span>':'')+'</div>';
+  return ''
+    + '<div class="ref-card">'
+    +   '<div class="ref-title"><span class="diamond">◇</span> 主語人称代名詞</div>'
+    +   '<table class="conj-table pron-table">'
+    +     '<thead><tr><th></th><th>単数</th><th>複数</th></tr></thead>'
+    +     '<tbody>'
+    +       '<tr><th>1人称</th><td>'+c('yo','私')+'</td>'
+    +         '<td><div class="stack">'+c('nosotros','私たち')+c('nosotras','')+'</div></td></tr>'
+    +       '<tr><th>2人称</th><td>'+c('tú','君')+'</td>'
+    +         '<td><div class="stack">'+c('vosotros','君たち')+c('vosotras','')+'</div></td></tr>'
+    +       '<tr><th>3人称</th>'
+    +         '<td><div class="stack">'+c('él','彼')+c('ella','彼女')+c('usted','あなた')+'</div></td>'
+    +         '<td><div class="stack">'+c('ellos','彼ら')+c('ellas','彼女ら')+c('ustedes','あなた方')+'</div></td></tr>'
+    +     '</tbody>'
+    +   '</table>'
+    + '</div>';
+}
+
+// 動詞の活用表（語幹＋語尾。語尾を強調）
+function buildVerbTable(inf){
+  const stem = inf.slice(0, -2);
+  const cell = (prons, subjForForm) => {
+    const f = conjugate(inf, subjForForm);
+    const end = f.slice(stem.length);
+    const pr = '<div class="stack">' + prons.map(p => '<span class="pron">('+p+')</span>').join('') + '</div>';
+    const es = '<span class="es">' + stem + '<span class="end">' + end + '</span></span>';
+    return '<div class="conj-cell">' + pr + es + '</div>';
+  };
+  return ''
+    + '<div class="ref-card">'
+    +   '<div class="ref-title"><span class="diamond">◇</span> ' + inf + '<small>（' + (VERB_JA[inf]||"") + '）の活用</small></div>'
+    +   '<table class="conj-table">'
+    +     '<thead><tr><th></th><th>単数</th><th>複数</th></tr></thead>'
+    +     '<tbody>'
+    +       '<tr><th>1人称</th><td>'+cell(['yo'],'yo')+'</td><td>'+cell(['nosotros','nosotras'],'nosotros')+'</td></tr>'
+    +       '<tr><th>2人称</th><td>'+cell(['tú'],'tú')+'</td><td>'+cell(['vosotros','vosotras'],'vosotros')+'</td></tr>'
+    +       '<tr><th>3人称</th><td>'+cell(['él','ella','usted'],'él')+'</td><td>'+cell(['ellos','ellas','ustedes'],'ellos')+'</td></tr>'
+    +     '</tbody>'
+    +   '</table>'
+    + '</div>';
+}
+
+function openRef(type){
+  elRefContent.innerHTML = (type === "pron") ? buildPronounTable() : buildVerbTable(state.current.verb);
+  elRefview.classList.add("show");
+  elRefview.scrollTop = 0;
+}
+function closeRef(){ elRefview.classList.remove("show"); }
+
+
+/* =========================================================================
+   7.6 単語チェック（フラッシュカード）
+   ========================================================================= */
+const elVocabview = $("vocabview"), elFcPrompt = $("fc-prompt"), elFcAnswer = $("fc-answer"),
+      elFcCat = $("fc-cat"),
+      elFlashcard = $("flashcard"), elVocabPos = $("vocab-pos"), elVocabTotal = $("vocab-total");
+
+const vocab = { dir:"es", order:"seq", deck:[], pos:0 };
+
+function vocabBuildDeck(){
+  const idx = VOCAB.map((_,i)=>i);
+  vocab.deck = (vocab.order === "rand") ? shuffle(idx) : idx;
+  vocab.pos = 0;
+}
+
+function vocabRender(){
+  const w = VOCAB[vocab.deck[vocab.pos]];
+  const cat = w.g === undefined ? "（動詞）" : "（名詞）";
+  const tag = w.g ? '<span class="tag">[' + w.g + ']</span>' : '';
+  if(vocab.dir === "es"){
+    // 問い＝西語。品詞は答え（日本語）の上に表示（めくるまでネタバレしない）
+    elFcCat.textContent = "";
+    elFcPrompt.textContent = w.es;
+    elFcAnswer.innerHTML = '<span class="fc-ans-cat">' + cat + '</span>' + tag + w.ja;
+  }else{
+    // 問い＝日本語。品詞は日本語の上に表示（ヒントとして最初から見える）
+    elFcCat.textContent = cat;
+    elFcPrompt.textContent = w.ja;
+    elFcAnswer.innerHTML = w.es + (tag ? ' ' + tag : '');
+  }
+  elFlashcard.classList.remove("revealed"); // 表だけ表示
+  elVocabPos.textContent = (vocab.pos + 1);
+  elVocabTotal.textContent = VOCAB.length;
+}
+
+function vocabReveal(){ elFlashcard.classList.add("revealed"); }
+function vocabNext(){ vocab.pos = (vocab.pos + 1) % vocab.deck.length; vocabRender(); }
+function vocabPrev(){ vocab.pos = (vocab.pos - 1 + vocab.deck.length) % vocab.deck.length; vocabRender(); }
+
+function openVocab(){
+  vocabBuildDeck();
+  vocabRender();
+  elVocabview.classList.add("show");
+  elVocabview.scrollTop = 0;
+}
+function closeVocab(){ elVocabview.classList.remove("show"); }
 
 
 /* =========================================================================
@@ -986,7 +1333,34 @@ document.querySelectorAll("#levels button").forEach(b=>{
 
 btnAnswer.addEventListener("click", judge);
 btnNext.addEventListener("click", nextQuestion);
+btnPrev.addEventListener("click", historyBack);
 btnAudio.addEventListener("click", ()=>playAudio(state.current));
+
+// 参照ビュー（主語人称代名詞・活用表）
+btnRefPron.addEventListener("click", ()=>openRef("pron"));
+btnRefVerb.addEventListener("click", ()=>openRef("verb"));
+$("ref-back").addEventListener("click", closeRef);
+
+// 単語チェック（フラッシュカード）
+$("btn-vocab").addEventListener("click", openVocab);
+$("vocab-back").addEventListener("click", closeVocab);
+elFlashcard.addEventListener("click", vocabReveal);
+$("vocab-next").addEventListener("click", vocabNext);
+$("vocab-prev").addEventListener("click", vocabPrev);
+$("seg-dir").querySelectorAll("button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    vocab.dir = b.dataset.dir;
+    $("seg-dir").querySelectorAll("button").forEach(x=>x.classList.toggle("active", x===b));
+    vocabRender(); // 向きを変えて現在のカードを表に戻す
+  });
+});
+$("seg-order").querySelectorAll("button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    vocab.order = b.dataset.order;
+    $("seg-order").querySelectorAll("button").forEach(x=>x.classList.toggle("active", x===b));
+    vocabBuildDeck(); vocabRender(); // 並びを変えて最初から
+  });
+});
 
 // アクセント補助バー：直前にフォーカスした入力欄へ挿入
 elAccents.querySelectorAll("button").forEach(b=>{
