@@ -224,9 +224,16 @@
     content:""; position:absolute; top:0; left:0; right:0; height:6px;
     background:repeating-linear-gradient(90deg,var(--terra) 0 14px,var(--sun) 14px 28px,var(--teal) 28px 42px);
   }
-  .ref-title{font-size:1.05rem; font-weight:900; color:var(--ink); margin:6px 0 12px; display:flex; align-items:center; gap:6px;}
+  .ref-title{font-size:1.05rem; font-weight:900; color:var(--ink); margin:6px 0 12px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .ref-title .diamond{color:var(--terra);}
   .ref-title small{font-weight:600; color:var(--muted); font-size:.78rem;}
+  .conj-audio{
+    appearance:none; margin-left:auto; min-height:36px; padding:6px 12px; cursor:pointer;
+    border:none; border-radius:12px; background:var(--sun); color:#5a3a12;
+    box-shadow:0 3px 0 var(--sun-d); font-family:inherit; font-size:.88rem; font-weight:900;
+    display:inline-flex; align-items:center; gap:5px;
+  }
+  .conj-audio:active{transform:translateY(2px); box-shadow:0 1px 0 var(--sun-d);}
 
   table.conj-table{width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed;}
   .conj-table th, .conj-table td{border:1.5px solid var(--line); padding:7px 5px; vertical-align:middle;}
@@ -798,6 +805,20 @@ function playAudio(item){
   }catch(e){ fallback(); }
 }
 
+function conjugationText(inf){
+  return ["yo","tú","él","nosotros","vosotros","ellos"].map(s => conjugate(inf, s)).join(", ");
+}
+
+function playConjugationAudio(inf){
+  let usedFallback = false;
+  const fallback = ()=>{ if(!usedFallback){ usedFallback = true; speak(conjugationText(inf)); } };
+  try{
+    const audio = new Audio("assets/audio/conjugation/" + inf + ".mp3");
+    audio.addEventListener("error", fallback, {once:true});
+    audio.play().catch(fallback);
+  }catch(e){ fallback(); }
+}
+
 
 /* =========================================================================
    4. 状態とサイクル
@@ -1245,7 +1266,7 @@ function buildVerbTable(inf){
   };
   return ''
     + '<div class="ref-card">'
-    +   '<div class="ref-title"><span class="diamond">◇</span> ' + inf + '<small>（' + (VERB_JA[inf]||"") + '）の活用</small></div>'
+    +   '<div class="ref-title"><span class="diamond">◇</span> ' + inf + '<small>（' + (VERB_JA[inf]||"") + '）の活用</small><button class="conj-audio" type="button" data-inf="' + inf + '" title="' + inf + 'の活用音声を再生"><span>🔊</span><span>音声</span></button></div>'
     +   '<table class="conj-table">'
     +     '<thead><tr><th></th><th>単数</th><th>複数</th></tr></thead>'
     +     '<tbody>'
@@ -1259,6 +1280,8 @@ function buildVerbTable(inf){
 
 function openRef(type){
   elRefContent.innerHTML = (type === "pron") ? buildPronounTable() : buildVerbTable(state.current.verb);
+  const conjAudio = elRefContent.querySelector(".conj-audio");
+  if(conjAudio) conjAudio.addEventListener("click", ()=>playConjugationAudio(conjAudio.dataset.inf));
   elRefview.classList.add("show");
   elRefview.scrollTop = 0;
 }
