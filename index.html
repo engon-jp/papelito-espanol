@@ -942,7 +942,7 @@ let lastFocused = null; // アクセント補助バーの挿入先
 const HINTS = {
   1:"空欄をタップして選びましょう",
   2:"空欄に直接入力しましょう（アクセントも正確に）",
-  3:"主語と動詞は入力、目的語はタップで選択",
+  3:"主語と動詞は入力、最後の空欄はタップで選択",
   4:"全文をスペイン語で書きましょう（ピリオド・疑問符・アクセント符号なども正確に）",
 };
 
@@ -1026,7 +1026,7 @@ function renderTemplate(level){
 
   // --- 目的語/場所 ---
   if(level === 3){
-    addBlankButton("object", "____", ()=>openSheet("目的語を選ぶ", objectChoices(state.current), v=>setSel("object",v)));
+    addBlankButton("object", "____", ()=>openSheet("最後の空欄を選ぶ", objectChoices(state.current), v=>setSel("object",v)));
   }else{
     addText(P.object); // Nivel 1/2 は表示のみ
   }
@@ -1148,10 +1148,6 @@ function judge(){
   if(level === 1){
     const sOk = state.sel.subject === P.subject;
     const vOk = state.sel.verb === P.verb;
-    if(!state.sel.subject || !state.sel.verb){
-      flashHint("主語と動詞の両方を選んでください");
-      return;
-    }
     markBlank("subject", sOk); markBlank("verb", vOk);
     ok = sOk && vOk;
   }
@@ -1168,7 +1164,6 @@ function judge(){
     if(P.neg){ const nOk = strictEqual(getInput("no"), "no"); markInput("no", nOk); ok = ok && nOk; }
     const vOk = strictEqual(getInput("verb"), P.verb);
     markInput("verb", vOk); ok = ok && vOk;
-    if(!state.sel.object){ flashHint("目的語を選んでください"); return; }
     const oOk = state.sel.object === P.object;
     markBlank("object", oOk); ok = ok && oOk;
   }
@@ -1198,7 +1193,8 @@ function finishAnswer(ok){
 
   elFeedback.className = "feedback show " + (ok ? "ok" : "ng");
   elFeedback.innerHTML = ok
-    ? "🎉 ¡Correcto! 正解！"
+    ? '🎉 ¡Correcto! 正解！<span class="correct">' + state.current.es +
+      '<small>' + state.current.ja + '</small></span>'
     : '🙊 ¡Casi! 惜しい！正解はこちら：<span class="correct">' + state.current.es +
       '<small>' + state.current.ja + '</small></span>';
 
