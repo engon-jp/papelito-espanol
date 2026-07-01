@@ -29,7 +29,7 @@
 
 ## 現在のステータス
 - 実装：完了（`index.html` / `manifest.json`）。ローカル動作確認済み。
-- 公開：**初版を公開済み・稼働確認済み（2026-07-01）**。公開URL `https://engon-jp.github.io/soy-estudiante/`、リポジトリ `https://github.com/engon-jp/soy-estudiante`（GitHub Pages: main / root）。更新は `git push` で即反映。
+- 公開：Papelito Español に同梱して公開。学生配布用URLは `https://engon-jp.github.io/papelito-espanol/`、本アプリ直通は `https://engon-jp.github.io/papelito-espanol/soy-estudiante/index.html`。更新は親リポジトリ `https://github.com/engon-jp/papelito-espanol` で `git push` すれば反映される。
 - **⚠️ ローカルに未コミット・未pushの修正あり（2026-07-01時点）**：公開サイトはまだ初版のまま、下記の修正は反映されていない。
   1. Nivel 1/2/3 の補語の四角を統一（点線枠・「補語」表記・「？」を削除し、実線の無地空欄に）
   2. 補語のヒント欄を2タップ方式に変更（1回目タップはヒントを出さず入力可能、既にフォーカス済みの状態でもう1回タップするとヒントシートが開く）

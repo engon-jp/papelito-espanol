@@ -59,8 +59,8 @@
 - [x] GitHub Pages 公開済み・動作検証済み
 
 ## 公開URL
-- **GitHub Pages**: https://engon-jp.github.io/yo-hablo-espanol/
-- リポジトリ: https://github.com/engon-jp/yo-hablo-espanol
+- **GitHub Pages（学生配布用）**: https://engon-jp.github.io/papelito-espanol/
+- リポジトリ: https://github.com/engon-jp/papelito-espanol
 - **更新手順**: `git add index.html && git commit -m "..." && git push` のみで即時反映
 
 ## 実装済み機能（2026-06-30時点）
