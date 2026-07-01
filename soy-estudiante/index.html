@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#c0392b" />
 <link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+<link rel="apple-touch-icon" href="assets/icon-180.png" />
 <title>スペイン語学習アプリ ¡Soy estudiante!</title>
 <style>
   :root{
@@ -98,6 +100,19 @@
   .btn.sj-ok:hover{ background:#3a7a3a; }
   .btn.sj-ng{ background:var(--ng-d); color:#fff; border-color:var(--ng-d); box-shadow:0 4px 0 #9a2020; }
   .btn.sj-ng:hover{ background:#9a2020; }
+
+  /* ラウンドサマリ（1セット終了時） */
+  .summary{width:100%; display:flex; flex-direction:column; gap:12px; text-align:center; padding:4px 2px 2px;}
+  .sum-rate{font-size:1rem; font-weight:800; color:var(--muted);}
+  .sum-rate b{font-size:1.8rem; color:var(--terra-d); margin:0 2px;}
+  .sum-msg{font-size:1.14rem; font-weight:900; color:var(--ink);}
+  .sum-wrong{background:#fff; border:2px solid var(--line); border-radius:14px; padding:10px 12px; text-align:left;}
+  .sum-wrong-h{font-size:.76rem; font-weight:800; color:var(--ng-d); margin-bottom:7px;}
+  .sum-wrong ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;}
+  .sum-wrong .sum-es{display:block; font-weight:800; color:var(--ink); font-size:.95rem; line-height:1.3;}
+  .sum-wrong .sum-ja{display:block; font-size:.73rem; color:var(--muted); line-height:1.3;}
+  .sum-actions{display:flex; flex-direction:column; gap:10px; margin-top:2px;}
+  .sum-actions .btn{width:100%; min-height:52px;}
 
   /* レベルタブ */
   .levels{display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:0 0 10px;}
@@ -440,7 +455,7 @@
   <div class="hud">
     <div class="hud-bar">
       <div class="bar"><span class="bar-fill" id="progress-bar"></span></div>
-      <span class="hud-label">進捗 <b id="progress">1 / 20</b></span>
+      <span class="hud-label"><span id="progress-word">進捗</span> <b id="progress">1 / 20</b></span>
     </div>
     <div class="hud-coin"><span class="coin-ico">⭐</span><b id="score">正解 0 / 0 問</b></div>
     <button class="btn-reset" id="btn-reset" title="進捗・スコアをリセット">↺</button>
@@ -553,7 +568,7 @@
    1. データ（ser 作文練習）
    ========================================================================= */
 
-// 主語（Nivel 1/2 の出題用・14種）。日本語注記→スペイン語＋人称/数/性。
+// 主語（Nivel 1/2 の出題用・16種）。日本語注記→スペイン語＋人称/数/性。
 const SUBJECTS = [
   {ja:"私（男性）",     es:"Yo",       person:1, num:"sg", gen:"m"},
   {ja:"私（女性）",     es:"Yo",       person:1, num:"sg", gen:"f"},
@@ -567,6 +582,8 @@ const SUBJECTS = [
   {ja:"私たち（女性）", es:"Nosotras", person:1, num:"pl", gen:"f"},
   {ja:"君たち（男性）", es:"Vosotros", person:2, num:"pl", gen:"m"},
   {ja:"君たち（女性）", es:"Vosotras", person:2, num:"pl", gen:"f"},
+  {ja:"彼ら",           es:"Ellos",    person:3, num:"pl", gen:"m"},
+  {ja:"彼女ら",         es:"Ellas",    person:3, num:"pl", gen:"f"},
   {ja:"あなた方（男性）", es:"Ustedes", person:3, num:"pl", gen:"m"},
   {ja:"あなた方（女性）", es:"Ustedes", person:3, num:"pl", gen:"f"},
 ];
@@ -821,6 +838,11 @@ const ROUND = 20;
 function genForLevel(lv){ return (lv >= 3) ? genQA() : genStatement(); }
 function newRoundQueue(lv){ const q = []; for(let i=0;i<ROUND;i++) q.push(genForLevel(lv)); return q; }
 
+// ラウンド状態を作る（queue=出題する問題列 / answers=各問の正誤 / review=復習ラウンドか）
+function makeRound(queue, review){
+  return { queue, pos:0, answers:queue.map(()=>null), review:!!review };
+}
+
 const state = {
   level: 1,
   rounds: { 1:null, 2:null, 3:null, 4:null },
@@ -834,9 +856,12 @@ const state = {
 
 function curRound(){
   let r = state.rounds[state.level];
-  if(!r || !Array.isArray(r.queue) || r.queue.length !== ROUND){
-    r = { queue:newRoundQueue(state.level), pos:0 };
+  if(!r || !Array.isArray(r.queue) || r.queue.length === 0){
+    r = makeRound(newRoundQueue(state.level));
     state.rounds[state.level] = r;
+  }
+  if(!Array.isArray(r.answers) || r.answers.length !== r.queue.length){
+    r.answers = r.queue.map(()=>null); // 旧形式の保存データからの移行
   }
   return r;
 }
@@ -855,9 +880,14 @@ function load(){
     if(d.rounds && typeof d.rounds === "object"){
       for(const lv of [1,2,3,4]){
         const r = d.rounds[lv];
-        if(r && Array.isArray(r.queue) && r.queue.length === ROUND
+        if(r && Array.isArray(r.queue) && r.queue.length >= 1 && r.queue.length <= ROUND
            && r.queue.every(p => p && (p.kind === "stmt" || p.kind === "qa"))){
-          state.rounds[lv] = { queue:r.queue, pos:(r.pos >= 0 && r.pos < ROUND) ? r.pos : 0 };
+          const len = r.queue.length;
+          const answers = (Array.isArray(r.answers) && r.answers.length === len)
+            ? r.answers.map(a => (a === true || a === false) ? a : null)
+            : new Array(len).fill(null);
+          const pos = (Number.isInteger(r.pos) && r.pos >= 0 && r.pos <= len) ? r.pos : 0; // pos===len はサマリ表示中
+          state.rounds[lv] = { queue:r.queue, pos, answers, review:!!r.review };
         }
       }
     }
@@ -867,17 +897,16 @@ function load(){
 
 function loadCurrent(){
   const r = curRound();
+  if(r.pos >= r.queue.length){ renderSummary(); return; } // ラウンド終了 → サマリ画面
   state.current = r.queue[r.pos];
   state.isAnswered = false;
   render();
+  if(r.answers[r.pos] !== null) showAnswered(r.answers[r.pos]); // 解答済み：正解表示のみ（再採点なし）
 }
 
 function nextQuestion(){
   const r = curRound();
   r.pos++;
-  if(r.pos >= r.queue.length){
-    state.rounds[state.level] = { queue:newRoundQueue(state.level), pos:0 };
-  }
   save();
   loadCurrent();
 }
@@ -887,17 +916,21 @@ function historyBack(){
   const r = curRound();
   if(r.pos === 0) return;
   r.pos--;
-  state.current = r.queue[r.pos];
-  state.isAnswered = false;
-  render();
+  save();
+  loadCurrent();
+}
+
+// 解答済みの問題：自分の正誤と正解を表示し、再解答（スコア再カウント）はさせない
+function showAnswered(wasOk){
   state.isAnswered = true;
+  elSentence.querySelectorAll("input,textarea").forEach(el => { el.disabled = true; });
   btnAnswer.style.display = "none";
   btnNext.style.display = "";
   btnAudio.disabled = false;
-  elFeedback.className = "feedback show ok";
-  elFeedback.innerHTML = '📖 前の問題の正解：<span class="correct">' + correctHTML(state.current) + '</span>';
+  elFeedback.className = "feedback show " + (wasOk ? "ok" : "ng");
+  elFeedback.innerHTML = (wasOk ? '✅ 解答済み（正解）' : '📖 解答済み（不正解）')
+    + '：<span class="correct">' + correctHTML(state.current) + '</span>';
   if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; }
-  save();
 }
 
 
@@ -911,6 +944,7 @@ const elJa = $("ja"), elHint = $("hint"), elSentence = $("sentence"),
       elProgressBar = $("progress-bar"), elMascot = $("mascot"), elConfetti = $("confetti"),
       btnAnswer = $("btn-answer"), btnNext = $("btn-next"), btnAudio = $("btn-audio"),
       btnPrev = $("btn-prev"), btnReset = $("btn-reset"),
+      elActions = document.querySelector(".actions"), elProgressWord = $("progress-word"),
       btnRefPron = $("btn-ref-pron"), btnRefVerb = $("btn-ref-verb"),
       elRefview = $("refview"), elRefContent = $("ref-content"),
       elSelfJudge = $("self-judge"), btnSjOk = $("btn-sj-ok"), btnSjNg = $("btn-sj-ng");
@@ -957,9 +991,10 @@ function render(){
     ? (prob.jaQ + '<br><span class="ja-a">── ' + prob.jaA + '</span>')
     : prob.ja;
   elHint.textContent = HINTS[level];
-  elProgress.textContent = (r.pos+1) + " / " + ROUND;
+  elProgressWord.textContent = r.review ? "復習" : "進捗";
+  elProgress.textContent = (r.pos+1) + " / " + r.queue.length;
   elScore.textContent = "正解 " + state.scoreOK + " / " + state.scoreTotal + " 問";
-  if(elProgressBar) elProgressBar.style.width = ((r.pos+1)/ROUND*100).toFixed(1) + "%";
+  if(elProgressBar) elProgressBar.style.width = ((r.pos+1)/r.queue.length*100).toFixed(1) + "%";
   setMascot("idle");
 
   document.querySelectorAll("#levels button").forEach(b=>{
@@ -968,6 +1003,7 @@ function render(){
 
   elFeedback.className = "feedback"; elFeedback.innerHTML = ""; elFeedback.style.background = "";
   elSelfJudge.style.display = "none";
+  elActions.style.display = ""; // サマリ画面で隠した操作ボタン列を戻す
   btnAnswer.style.display = ""; btnAnswer.disabled = false;
   btnNext.style.display = "none";
   btnAudio.disabled = true;
@@ -1225,9 +1261,13 @@ function judge(){
 }
 
 function finishAnswer(ok){
+  const r = curRound();
   state.isAnswered = true;
-  state.scoreTotal++;
-  if(ok) state.scoreOK++;
+  if(r.answers[r.pos] === null){ // 未採点の問題のみ記録（スコアの二重カウント防止）
+    r.answers[r.pos] = ok;
+    state.scoreTotal++;
+    if(ok) state.scoreOK++;
+  }
   elScore.textContent = "正解 " + state.scoreOK + " / " + state.scoreTotal + " 問";
 
   elFeedback.className = "feedback show " + (ok ? "ok" : "ng");
@@ -1245,6 +1285,86 @@ function finishAnswer(ok){
   btnAudio.disabled = false;
   if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; }
   save();
+}
+
+
+/* =========================================================================
+   8.5 ラウンドサマリ（1セット終了時）
+   ========================================================================= */
+function summaryMessage(rate){
+  if(rate >= 100) return "¡Perfecto! 全問正解！";
+  if(rate >= 80)  return "¡Excelente! すばらしい！";
+  if(rate >= 60)  return "¡Muy bien! その調子！";
+  return "¡Ánimo! 復習してもう一度！";
+}
+
+function summaryItemHTML(p){
+  if(p.kind === "qa"){
+    return '<li><span class="sum-es">' + p.esQ + '　──　' + p.esA + '</span><span class="sum-ja">' + p.jaQ + '　──　' + p.jaA + '</span></li>';
+  }
+  return '<li><span class="sum-es">' + p.es + '</span><span class="sum-ja">' + p.ja + '</span></li>';
+}
+
+function renderSummary(){
+  const r = curRound();
+  const total = r.queue.length;
+  const okN = r.answers.filter(a => a === true).length;
+  const rate = Math.round(okN / total * 100);
+  const wrong = r.queue.filter((_, i) => r.answers[i] === false); // 間違えた問題の列
+
+  elJa.textContent = r.review ? "🎉 ¡Repaso completo! 復習終了！" : "🎉 ¡Ronda completa! 1セット終了！";
+  elHint.textContent = "";
+  elProgressWord.textContent = r.review ? "復習" : "進捗";
+  elProgress.textContent = total + " / " + total;
+  elScore.textContent = "正解 " + state.scoreOK + " / " + state.scoreTotal + " 問";
+  if(elProgressBar) elProgressBar.style.width = "100%";
+  document.querySelectorAll("#levels button").forEach(b=>{
+    b.classList.toggle("active", Number(b.dataset.level) === state.level);
+  });
+
+  state.isAnswered = true; // Enterキーでの解答を無効化
+  elFeedback.className = "feedback"; elFeedback.innerHTML = ""; elFeedback.style.background = "";
+  elSelfJudge.style.display = "none";
+  elActions.style.display = "none";
+  btnRefVerb.hidden = true; btnRefPron.hidden = true;
+  elAccentsWrap.style.display = "none";
+
+  const wrongHTML = wrong.length
+    ? '<div class="sum-wrong"><div class="sum-wrong-h">間違えた問題</div><ul>'
+      + wrong.map(summaryItemHTML).join('')
+      + '</ul></div>'
+    : '';
+  elSentence.innerHTML = ''
+    + '<div class="summary">'
+    +   '<div class="sum-rate">正解 <b>' + okN + '</b> / ' + total + ' 問（' + rate + '%）</div>'
+    +   '<div class="sum-msg">' + summaryMessage(rate) + '</div>'
+    +   wrongHTML
+    +   '<div class="sum-actions">'
+    +     (wrong.length ? '<button class="btn" id="btn-review">🔁 間違えた問題を復習（' + wrong.length + '問）</button>' : '')
+    +     '<button class="btn secondary" id="btn-newround">✨ 新しいラウンドへ →</button>'
+    +   '</div>'
+    + '</div>';
+
+  const bReview = $("btn-review");
+  if(bReview) bReview.addEventListener("click", ()=>startReview(wrong));
+  $("btn-newround").addEventListener("click", startNewRound);
+
+  setMascot(rate >= 60 ? "happy" : "idle");
+  if(rate >= 80) popConfetti();
+}
+
+// 間違えた問題だけの復習ラウンドを開始
+function startReview(wrongQueue){
+  state.rounds[state.level] = makeRound(shuffle(wrongQueue), true);
+  save();
+  loadCurrent();
+}
+
+// 新しい20問ラウンドを開始
+function startNewRound(){
+  state.rounds[state.level] = makeRound(newRoundQueue(state.level));
+  save();
+  loadCurrent();
 }
 
 
@@ -1433,6 +1553,11 @@ document.addEventListener("keydown", e=>{
    ========================================================================= */
 load();
 loadCurrent();
+
+// Service Worker（オフライン対応）の登録。HTTPS/localhost でのみ有効。
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("../sw.js").catch(()=>{}); });
+}
 </script>
 </body>
 </html>

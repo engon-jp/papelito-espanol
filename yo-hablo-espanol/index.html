@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#c0392b" />
 <link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+<link rel="apple-touch-icon" href="assets/icon-180.png" />
 <title>スペイン語学習アプリ ¡Yo hablo español!</title>
 <style>
   :root{
@@ -98,6 +100,19 @@
   .btn.sj-ok:hover{ background:#3a7a3a; }
   .btn.sj-ng{ background:var(--ng-d); color:#fff; border-color:var(--ng-d); box-shadow:0 4px 0 #9a2020; }
   .btn.sj-ng:hover{ background:#9a2020; }
+
+  /* ラウンドサマリ（1セット終了時） */
+  .summary{width:100%; display:flex; flex-direction:column; gap:12px; text-align:center; padding:4px 2px 2px;}
+  .sum-rate{font-size:1rem; font-weight:800; color:var(--muted);}
+  .sum-rate b{font-size:1.8rem; color:var(--terra-d); margin:0 2px;}
+  .sum-msg{font-size:1.14rem; font-weight:900; color:var(--ink);}
+  .sum-wrong{background:#fff; border:2px solid var(--line); border-radius:14px; padding:10px 12px; text-align:left;}
+  .sum-wrong-h{font-size:.76rem; font-weight:800; color:var(--ng-d); margin-bottom:7px;}
+  .sum-wrong ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;}
+  .sum-wrong .sum-es{display:block; font-weight:800; color:var(--ink); font-size:.95rem; line-height:1.3;}
+  .sum-wrong .sum-ja{display:block; font-size:.73rem; color:var(--muted); line-height:1.3;}
+  .sum-actions{display:flex; flex-direction:column; gap:10px; margin-top:2px;}
+  .sum-actions .btn{width:100%; min-height:52px;}
 
   /* レベルタブ */
   .levels{display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:0 0 10px;}
@@ -431,7 +446,7 @@
   <div class="hud">
     <div class="hud-bar">
       <div class="bar"><span class="bar-fill" id="progress-bar"></span></div>
-      <span class="hud-label">進捗 <b id="progress">1 / 25</b></span>
+      <span class="hud-label"><span id="progress-word">進捗</span> <b id="progress">1 / 25</b></span>
     </div>
     <div class="hud-coin"><span class="coin-ico">⭐</span><b id="score">正解 0 / 0 問</b></div>
     <button class="btn-reset" id="btn-reset" title="進捗・スコアをリセット">↺</button>
@@ -706,51 +721,6 @@ function parsePhrase(es){
   return { prefix, subject, neg, verb, object, suffix };
 }
 
-// Nivel 4 用の柔軟な判定：
-// ・yo/tú/nosotros(as)/vosotros(as) は主語を省略しても正解
-// ・主語の位置が文中で変わっても正解（動詞・否定・目的語の語順・表記は厳格）
-// ・3人称（él/ella/usted/ellos/ellas/ustedes）は主語が無い・誤りだと不正解
-const THIRD_PERSON_SUBJECTS = ["él","el","ella","usted","ellos","ellas","ustedes"];
-function judgeLevel4(value, P){
-  let s = (value ?? "").trim();
-
-  const hasPrefix = s.startsWith("¿");
-  if(hasPrefix !== !!P.prefix) return false;
-  if(hasPrefix) s = s.slice(1);
-
-  const last = s.slice(-1);
-  if(last !== P.suffix) return false; // 末尾記号（. ? !）は厳格
-  s = s.slice(0, -1);
-
-  const tokens = s.trim().split(/\s+/).filter(Boolean);
-
-  // 主語トークンを探す（大小文字を区別せず・最初の一致のみ除去）
-  const subjLower = P.subject.toLowerCase();
-  const subjIdx = tokens.findIndex(t => t.toLowerCase() === subjLower);
-  const subjectFound = subjIdx !== -1;
-  const subjectWasFirst = subjIdx === 0;
-  if(subjectFound) tokens.splice(subjIdx, 1);
-
-  if(THIRD_PERSON_SUBJECTS.includes(subjLower) && !subjectFound) return false; // 3人称は主語必須
-
-  const required = [];
-  if(P.neg) required.push("no");
-  required.push(P.verb);
-  required.push(...P.object.split(/\s+/));
-
-  if(tokens.length !== required.length) return false;
-
-  for(let i = 0; i < required.length; i++){
-    if(i === 0 && !subjectWasFirst){
-      // 主語省略／移動により文頭になった語：大文字始まり違いのみ許容
-      if(tokens[i].toLowerCase() !== required[i].toLowerCase()) return false;
-    }else{
-      if(tokens[i] !== required[i]) return false; // それ以外は厳格（アクセント・大小文字含む）
-    }
-  }
-  return true;
-}
-
 // 規則活用（9動詞すべて規則）。infinitive と subject から活用形を返す
 const ENDINGS = {
   ar:["o","as","a","amos","áis","an"],
@@ -884,6 +854,11 @@ function newRoundQueue(){
   return shuffle(MASTER.map((_,i)=>i)).slice(0, ROUND);
 }
 
+// ラウンド状態を作る（queue=出題する問題index列 / answers=各問の正誤 / review=復習ラウンドか）
+function makeRound(queue, review){
+  return { queue, pos:0, answers:queue.map(()=>null), review:!!review };
+}
+
 const state = {
   level: 1,
   // レベルごとに独立したラウンド {queue, pos}（25問×4レベル）
@@ -900,9 +875,12 @@ const state = {
 // 現在レベルのラウンド（無ければ新規25問を抽選）
 function curRound(){
   let r = state.rounds[state.level];
-  if(!r || !Array.isArray(r.queue) || r.queue.length !== ROUND){
-    r = { queue:newRoundQueue(), pos:0 };
+  if(!r || !Array.isArray(r.queue) || r.queue.length === 0){
+    r = makeRound(newRoundQueue());
     state.rounds[state.level] = r;
+  }
+  if(!Array.isArray(r.answers) || r.answers.length !== r.queue.length){
+    r.answers = r.queue.map(()=>null); // 旧形式の保存データからの移行
   }
   return r;
 }
@@ -921,9 +899,14 @@ function load(){
     if(d.rounds && typeof d.rounds === "object"){
       for(const lv of [1,2,3,4]){
         const r = d.rounds[lv];
-        if(r && Array.isArray(r.queue) && r.queue.length === ROUND
+        if(r && Array.isArray(r.queue) && r.queue.length >= 1 && r.queue.length <= ROUND
            && r.queue.every(i => Number.isInteger(i) && i >= 0 && i < MASTER.length)){
-          state.rounds[lv] = { queue:r.queue, pos:(r.pos >= 0 && r.pos < ROUND) ? r.pos : 0 };
+          const len = r.queue.length;
+          const answers = (Array.isArray(r.answers) && r.answers.length === len)
+            ? r.answers.map(a => (a === true || a === false) ? a : null)
+            : new Array(len).fill(null);
+          const pos = (Number.isInteger(r.pos) && r.pos >= 0 && r.pos <= len) ? r.pos : 0; // pos===len はサマリ表示中
+          state.rounds[lv] = { queue:r.queue, pos, answers, review:!!r.review };
         }
       }
     }
@@ -933,19 +916,18 @@ function load(){
 
 function loadCurrent(){
   const r = curRound();
+  if(r.pos >= r.queue.length){ renderSummary(); return; } // ラウンド終了 → サマリ画面
   state.current = MASTER[r.queue[r.pos]];
   state.P = parsePhrase(state.current.es);
   state.isAnswered = false;
   state.sel = { subject:null, verb:null, object:null };
   render();
+  if(r.answers[r.pos] !== null) showAnswered(r.answers[r.pos]); // 解答済み：正解表示のみ（再採点なし）
 }
 
 function nextQuestion(){
   const r = curRound();
   r.pos++;
-  if(r.pos >= r.queue.length){
-    state.rounds[state.level] = { queue:newRoundQueue(), pos:0 }; // ラウンド終了 → 新しい25問を抽選
-  }
   save();
   loadCurrent();
 }
@@ -955,21 +937,21 @@ function historyBack(){
   const r = curRound();
   if(r.pos === 0) return;
   r.pos--;
-  state.current = MASTER[r.queue[r.pos]];
-  state.P = parsePhrase(state.current.es);
-  state.isAnswered = false;
-  state.sel = {subject:null, verb:null, object:null};
-  render(); // 通常描画でUIをリセット
-  // 即座に正解を表示（採点なし）
+  save();
+  loadCurrent();
+}
+
+// 解答済みの問題：自分の正誤と正解を表示し、再解答（スコア再カウント）はさせない
+function showAnswered(wasOk){
   state.isAnswered = true;
+  elSentence.querySelectorAll("input,textarea").forEach(el => { el.disabled = true; });
   btnAnswer.style.display = "none";
   btnNext.style.display = "";
   btnAudio.disabled = false;
-  elFeedback.className = "feedback show ok";
-  elFeedback.innerHTML = '📖 前の問題の正解：<span class="correct">'
-    + state.current.es + '<small>' + state.current.ja + '</small></span>';
+  elFeedback.className = "feedback show " + (wasOk ? "ok" : "ng");
+  elFeedback.innerHTML = (wasOk ? '✅ 解答済み（正解）' : '📖 解答済み（不正解）')
+    + '：<span class="correct"><strong>' + state.current.es + '</strong><small>' + state.current.ja + '</small></span>';
   if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; }
-  save();
 }
 
 
@@ -983,6 +965,7 @@ const elJa = $("ja"), elHint = $("hint"), elSentence = $("sentence"),
       elProgressBar = $("progress-bar"), elMascot = $("mascot"), elConfetti = $("confetti"),
       btnAnswer = $("btn-answer"), btnNext = $("btn-next"), btnAudio = $("btn-audio"),
       btnPrev = $("btn-prev"), btnReset = $("btn-reset"),
+      elActions = document.querySelector(".actions"), elProgressWord = $("progress-word"),
       btnRefPron = $("btn-ref-pron"), btnRefVerb = $("btn-ref-verb"), refVerbLabel = $("ref-verb-label"),
       elRefview = $("refview"), elRefContent = $("ref-content"),
       elSelfJudge = $("self-judge"), btnSjOk = $("btn-sj-ok"), btnSjNg = $("btn-sj-ng");
@@ -1026,9 +1009,10 @@ function render(){
   const r = curRound();
   elJa.textContent = current.ja;
   elHint.textContent = HINTS[level];
-  elProgress.textContent = (r.pos+1) + " / " + ROUND;
+  elProgressWord.textContent = r.review ? "復習" : "進捗";
+  elProgress.textContent = (r.pos+1) + " / " + r.queue.length;
   elScore.textContent = "正解 " + state.scoreOK + " / " + state.scoreTotal + " 問";
-  if(elProgressBar) elProgressBar.style.width = ((r.pos+1)/ROUND*100).toFixed(1) + "%";
+  if(elProgressBar) elProgressBar.style.width = ((r.pos+1)/r.queue.length*100).toFixed(1) + "%";
   setMascot("idle");
 
   // タブ表示
@@ -1040,6 +1024,7 @@ function render(){
   elFeedback.className = "feedback";
   elFeedback.innerHTML = "";
   elSelfJudge.style.display = "none";
+  elActions.style.display = ""; // サマリ画面で隠した操作ボタン列を戻す
   btnAnswer.style.display = "";
   btnAnswer.disabled = false;
   btnNext.style.display = "none";
@@ -1266,9 +1251,13 @@ function flashHint(msg){
 }
 
 function finishAnswer(ok){
+  const r = curRound();
   state.isAnswered = true;
-  state.scoreTotal++;
-  if(ok) state.scoreOK++;
+  if(r.answers[r.pos] === null){ // 未採点の問題のみ記録（スコアの二重カウント防止）
+    r.answers[r.pos] = ok;
+    state.scoreTotal++;
+    if(ok) state.scoreOK++;
+  }
   elScore.textContent = "正解 " + state.scoreOK + " / " + state.scoreTotal + " 問";
 
   elFeedback.className = "feedback show " + (ok ? "ok" : "ng");
@@ -1286,6 +1275,79 @@ function finishAnswer(ok){
   btnAudio.disabled = false;
   if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; } // Nivel 3/4 は解答後に参照ボタンを表示
   save();
+}
+
+
+/* =========================================================================
+   7.4 ラウンドサマリ（1セット終了時）
+   ========================================================================= */
+function summaryMessage(rate){
+  if(rate >= 100) return "¡Perfecto! 全問正解！";
+  if(rate >= 80)  return "¡Excelente! すばらしい！";
+  if(rate >= 60)  return "¡Muy bien! その調子！";
+  return "¡Ánimo! 復習してもう一度！";
+}
+
+function renderSummary(){
+  const r = curRound();
+  const total = r.queue.length;
+  const okN = r.answers.filter(a => a === true).length;
+  const rate = Math.round(okN / total * 100);
+  const wrong = r.queue.filter((_, i) => r.answers[i] === false); // 間違えた問題のindex列
+
+  elJa.textContent = r.review ? "🎉 ¡Repaso completo! 復習終了！" : "🎉 ¡Ronda completa! 1セット終了！";
+  elHint.textContent = "";
+  elProgressWord.textContent = r.review ? "復習" : "進捗";
+  elProgress.textContent = total + " / " + total;
+  elScore.textContent = "正解 " + state.scoreOK + " / " + state.scoreTotal + " 問";
+  if(elProgressBar) elProgressBar.style.width = "100%";
+  document.querySelectorAll("#levels button").forEach(b=>{
+    b.classList.toggle("active", Number(b.dataset.level) === state.level);
+  });
+
+  state.isAnswered = true; // Enterキーでの解答を無効化
+  elFeedback.className = "feedback"; elFeedback.innerHTML = "";
+  elSelfJudge.style.display = "none";
+  elActions.style.display = "none";
+  btnRefVerb.hidden = true; btnRefPron.hidden = true;
+  elAccentsWrap.style.display = "none";
+
+  const wrongHTML = wrong.length
+    ? '<div class="sum-wrong"><div class="sum-wrong-h">間違えた問題</div><ul>'
+      + wrong.map(mi => '<li><span class="sum-es">' + MASTER[mi].es + '</span><span class="sum-ja">' + MASTER[mi].ja + '</span></li>').join('')
+      + '</ul></div>'
+    : '';
+  elSentence.innerHTML = ''
+    + '<div class="summary">'
+    +   '<div class="sum-rate">正解 <b>' + okN + '</b> / ' + total + ' 問（' + rate + '%）</div>'
+    +   '<div class="sum-msg">' + summaryMessage(rate) + '</div>'
+    +   wrongHTML
+    +   '<div class="sum-actions">'
+    +     (wrong.length ? '<button class="btn" id="btn-review">🔁 間違えた問題を復習（' + wrong.length + '問）</button>' : '')
+    +     '<button class="btn secondary" id="btn-newround">✨ 新しいラウンドへ →</button>'
+    +   '</div>'
+    + '</div>';
+
+  const bReview = $("btn-review");
+  if(bReview) bReview.addEventListener("click", ()=>startReview(wrong));
+  $("btn-newround").addEventListener("click", startNewRound);
+
+  setMascot(rate >= 60 ? "happy" : "idle");
+  if(rate >= 80) popConfetti();
+}
+
+// 間違えた問題だけの復習ラウンドを開始
+function startReview(wrongQueue){
+  state.rounds[state.level] = makeRound(shuffle(wrongQueue), true);
+  save();
+  loadCurrent();
+}
+
+// 新しい25問ラウンドを開始
+function startNewRound(){
+  state.rounds[state.level] = makeRound(newRoundQueue());
+  save();
+  loadCurrent();
 }
 
 
@@ -1490,6 +1552,11 @@ document.addEventListener("keydown", e=>{
    ========================================================================= */
 load();
 loadCurrent();
+
+// Service Worker（オフライン対応）の登録。HTTPS/localhost でのみ有効。
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("../sw.js").catch(()=>{}); });
+}
 </script>
 </body>
 </html>
