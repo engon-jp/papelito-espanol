@@ -1,0 +1,13 @@
+{
+  "name": "スペイン語学習アプリ ¡Soy estudiante!",
+  "short_name": "¡Soy estudiante!",
+  "description": "動詞 ser と主語人称代名詞を使った作文練習アプリ（肯定・否定・疑問、一問一答）",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff7f2",
+  "theme_color": "#c0392b",
+  "icons": []
+}

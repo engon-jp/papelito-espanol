@@ -1,4 +1,176 @@
 <!DOCTYPE html>
+<html lang="ja">
+<head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=yo-hablo-espanol/">
-<script>location.replace("yo-hablo-espanol/");</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papelito Español</title>
+<style>
+  :root{
+    --paper:#fff9f0; --ink:#4a382e; --muted:#806d63;
+    --terra:#e2664b; --terra-d:#b94b35; --sun:#f4b73e; --sun-d:#ca8d1e;
+    --teal:#2fb6a8; --teal-d:#21857b; --cream:#fff0d4; --line:#ead9c0;
+    --leaf:#72b66f; --sky:#cfe9ef; --shadow:0 10px 25px rgba(91,62,41,.16);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; min-height:100%; font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;}
+  body{
+    min-height:100vh; color:var(--ink);
+    background:
+      linear-gradient(180deg,#cfe9ef 0%, #ffe6cf 46%, #fff9f0 100%);
+    display:flex; justify-content:center;
+  }
+  body::before{
+    content:""; position:fixed; top:0; left:0; right:0; height:30px; z-index:2;
+    background:repeating-linear-gradient(90deg,var(--terra) 0 18px,var(--sun) 18px 36px,var(--teal) 36px 54px);
+    clip-path:polygon(0 0,100% 0,100% 55%,97% 100%,94% 55%,91% 100%,88% 55%,85% 100%,82% 55%,79% 100%,76% 55%,73% 100%,70% 55%,67% 100%,64% 55%,61% 100%,58% 55%,55% 100%,52% 55%,49% 100%,46% 55%,43% 100%,40% 55%,37% 100%,34% 55%,31% 100%,28% 55%,25% 100%,22% 55%,19% 100%,16% 55%,13% 100%,10% 55%,7% 100%,4% 55%,1% 100%,0 55%);
+    filter:drop-shadow(0 2px 1px rgba(0,0,0,.08));
+  }
+  main{width:100%; max-width:700px; padding:48px 16px 36px;}
+  .hero{
+    display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center;
+    background:rgba(255,249,240,.72); border:2px solid rgba(255,255,255,.9);
+    border-radius:22px; box-shadow:var(--shadow); padding:16px 15px 17px; margin-bottom:14px;
+    position:relative; overflow:hidden;
+  }
+  .hero::before{
+    content:""; position:absolute; left:0; right:0; top:0; height:7px;
+    background:repeating-linear-gradient(90deg,var(--terra) 0 16px,var(--sun) 16px 32px,var(--teal) 32px 48px,var(--leaf) 48px 64px);
+  }
+  .mascot-wrap{
+    width:92px; height:92px; border-radius:24px; background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:inset 0 -4px 0 #f2ddbf, 0 4px 0 #ead9c0;
+    border:2px solid #fff7e8;
+  }
+  .mascot{width:86px; height:86px; animation:bob 3s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .brand{min-width:0;}
+  .kicker{font-size:.76rem; font-weight:900; color:var(--terra); letter-spacing:.04em;}
+  h1{font-size:2rem; line-height:1.05; margin:3px 0 6px; color:var(--ink);}
+  .lead{font-size:.88rem; color:var(--muted); margin:0; line-height:1.45;}
+  .shelf-label{
+    margin:0 2px 9px; font-size:.78rem; font-weight:900; color:var(--teal-d);
+    display:flex; align-items:center; gap:6px;
+  }
+  .shelf-label::before{content:""; width:20px; height:4px; border-radius:99px; background:var(--teal);}
+  .apps{display:grid; gap:12px;}
+  .app-card{
+    display:block; text-decoration:none; color:inherit; background:var(--paper);
+    border:2px solid #fff; border-radius:18px; box-shadow:var(--shadow);
+    padding:14px; position:relative; overflow:hidden; transition:.12s ease;
+  }
+  .app-card:active{transform:translateY(2px); box-shadow:0 6px 18px rgba(91,62,41,.14);}
+  .app-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:6px;
+    background:repeating-linear-gradient(90deg,var(--terra) 0 14px,var(--sun) 14px 28px,var(--teal) 28px 42px);
+  }
+  .app-head{display:flex; align-items:center; gap:12px;}
+  .app-icon{
+    width:58px; height:58px; border-radius:16px; background:#fff;
+    border:2px solid #fff4df; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 0 #ead9c0; flex:0 0 auto;
+  }
+  .app-icon svg{width:44px; height:44px; display:block;}
+  .app-copy{min-width:0; flex:1;}
+  .app-title{font-size:1.12rem; font-weight:900; line-height:1.15;}
+  .app-sub{font-size:.78rem; color:var(--muted); margin-top:4px; line-height:1.35;}
+  .open{
+    color:#fff; background:var(--teal); box-shadow:0 3px 0 var(--teal-d);
+    border-radius:12px; padding:8px 10px; font-size:.82rem; font-weight:900; white-space:nowrap;
+  }
+  @media (max-width:430px){
+    main{padding-top:46px;}
+    .hero{grid-template-columns:1fr; justify-items:center; text-align:center; gap:9px;}
+    .mascot-wrap{width:86px; height:86px;}
+    h1{font-size:1.62rem;}
+    .app-head{gap:10px;}
+    .app-icon{width:52px; height:52px;}
+    .app-icon svg{width:40px; height:40px;}
+    .open{padding:7px 8px; font-size:.74rem;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .mascot{animation:none !important;}
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <div class="mascot-wrap" aria-hidden="true">
+      <svg class="mascot" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="40" cy="90" rx="8" ry="4.5" fill="#6b4a36"/>
+        <ellipse cx="62" cy="90" rx="8" ry="4.5" fill="#6b4a36"/>
+        <path d="M20 58 Q10 54 8 44" fill="none" stroke="#1f8d82" stroke-width="6" stroke-linecap="round"/>
+        <path d="M82 58 Q90 62 90 70" fill="none" stroke="#1f8d82" stroke-width="6" stroke-linecap="round"/>
+        <rect x="16" y="30" width="68" height="54" rx="11" fill="#2FB6A8"/>
+        <rect x="24" y="36" width="52" height="42" rx="7" fill="#FFFAF0"/>
+        <line x1="50" y1="38" x2="50" y2="76" stroke="#ecdfce" stroke-width="1.5"/>
+        <ellipse cx="37" cy="59" rx="5" ry="3.5" fill="#F08A6B" opacity=".5"/>
+        <ellipse cx="63" cy="59" rx="5" ry="3.5" fill="#F08A6B" opacity=".5"/>
+        <circle cx="40" cy="52" r="4" fill="#4A382E"/>
+        <circle cx="60" cy="52" r="4" fill="#4A382E"/>
+        <circle cx="41.5" cy="50.5" r="1.3" fill="#fff"/>
+        <circle cx="61.5" cy="50.5" r="1.3" fill="#fff"/>
+        <path d="M41 62 Q50 75 59 62 Z" fill="#b5462f"/>
+        <g transform="rotate(-10 50 26)">
+          <ellipse cx="50" cy="27" rx="22" ry="9" fill="#E2664B"/>
+          <path d="M30 27 Q50 14 70 27 Z" fill="#E2664B"/>
+          <circle cx="50" cy="15" r="2.6" fill="#bb4d36"/>
+        </g>
+      </svg>
+    </div>
+    <div class="brand">
+      <div class="kicker">Gramática para empezar</div>
+      <h1>Papelito Español</h1>
+      <p class="lead">初学者向けのやさしいスペイン語学習アプリ</p>
+    </div>
+  </header>
+
+  <div class="shelf-label">練習メニュー</div>
+  <section class="apps" aria-label="アプリ一覧">
+    <a class="app-card" href="yo-hablo-espanol/index.html">
+      <div class="app-head">
+        <div class="app-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 16h32a10 10 0 0 1 10 10v7a10 10 0 0 1-10 10H28l-11 8 2-8h-7A10 10 0 0 1 2 33v-7a10 10 0 0 1 10-10z" fill="#2FB6A8"/>
+            <circle cx="19" cy="29" r="3.5" fill="#fff9f0"/>
+            <circle cx="30" cy="29" r="3.5" fill="#fff9f0"/>
+            <circle cx="41" cy="29" r="3.5" fill="#fff9f0"/>
+            <path d="M45 10c5 2 8 6 9 11" fill="none" stroke="#F4B73E" stroke-width="5" stroke-linecap="round"/>
+            <rect x="32" y="43" width="9" height="10" rx="3" fill="#E2664B"/>
+            <rect x="43" y="41" width="9" height="12" rx="3" fill="#F4B73E"/>
+            <rect x="54" y="37" width="8" height="16" rx="3" fill="#72B66F"/>
+          </svg>
+        </div>
+        <div class="app-copy">
+          <div class="app-title">¡Yo hablo español!</div>
+          <div class="app-sub">主語人称代名詞＋規則動詞の作文練習</div>
+        </div>
+        <div class="open">開く</div>
+      </div>
+    </a>
+
+    <a class="app-card" href="soy-estudiante/index.html">
+      <div class="app-head">
+        <div class="app-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="12" width="44" height="40" rx="10" fill="#FFF0D4"/>
+            <path d="M18 22h28" stroke="#E2664B" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="26" cy="34" r="6" fill="#2FB6A8"/>
+            <path d="M17 47c2-7 16-7 18 0" fill="#2FB6A8"/>
+            <path d="M39 34h10" stroke="#4A382E" stroke-width="4" stroke-linecap="round"/>
+            <path d="M39 43h10" stroke="#4A382E" stroke-width="4" stroke-linecap="round"/>
+            <path d="M43 34v9" stroke="#F4B73E" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="app-copy">
+          <div class="app-title">¡Soy estudiante!</div>
+          <div class="app-sub">主語人称代名詞 ＋ 動詞 ser の作文練習</div>
+        </div>
+        <div class="open">開く</div>
+      </div>
+    </a>
+  </section>
+</main>
+</body>
+</html>

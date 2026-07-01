@@ -13,8 +13,8 @@
 ### ファイル構成
 ```
 アプリ制作/
-├─ index.html              … リダイレクト専用（→ yo-hablo-espanol/ へ転送）
-└─ yo-hablo-espanol/
+├─ index.html              … アプリ選択画面（Yo hablo español / Soy estudiante）
+├─ yo-hablo-espanol/
    ├─ index.html           … 本体（これ1枚で動く）
    ├─ manifest.json        … スマホ「ホーム画面に追加」用
    ├─ audio-check.html     … 音声確認ツール（48フレーズの再生・判定）
@@ -22,6 +22,7 @@
    │  ├─ conjugation/      … 活用表用 mp3（9動詞）
    │  └─ pronouns/         … 主語人称代名詞表用 mp3（単数・複数）
    └─ PROGRESS.md          … このファイル
+└─ soy-estudiante/         … 姉妹アプリ（Papelito Español内のサブフォルダとして同梱）
 ```
 
 ## 設計メモ（実装の要点）
@@ -46,6 +47,8 @@
   - phrase_47：¿Usted compra un regalo? を疑問文イントネーションで再生成
 - [x] 活用表用 mp3（9動詞）配置・音声ボタン追加
 - [x] 主語人称代名詞表に単数・複数の音声ボタン追加（ElevenLabs音声を配置、2026-07-01）
+- [x] 親 `index.html` をアプリ選択画面に変更し、各アプリに「選択」へ戻るボタンを追加（2026-07-01）
+- [x] ホーム画面の仮タイトルを「Papelito Español」にし、本マスコットと専用SVGアイコンでデザイン調整（2026-07-01）
 - [x] Nivel 4 を自動採点→自己採点方式に変更（2026-07-01）
 - [x] スペイン語否定文9文を自然な形に修正（"no come un tomate"→"no come tomates" 等）
 - [x] OBJECT_POOLS を修正後の文に合わせて更新

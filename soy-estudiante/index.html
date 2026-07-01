@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#c0392b" />
 <link rel="manifest" href="manifest.json" />
-<title>スペイン語学習アプリ ¡Yo hablo español!</title>
+<title>スペイン語学習アプリ ¡Soy estudiante!</title>
 <style>
   :root{
     --paper:#FFFDF6; --cream:#FFF6E6; --ink:#4A382E; --muted:#9c8b7d;
@@ -165,7 +165,7 @@
   input.blank-in.is-ok{border-color:var(--ok); background:var(--ok-bg); box-shadow:0 3px 0 #bfe0bf;}
   input.blank-in.is-ng{border-color:var(--ng); background:var(--ng-bg); box-shadow:0 3px 0 #f2c4c4;}
   textarea.full-in{
-    width:100%; min-height:96px; padding:13px; font-size:1.12rem; line-height:1.5; font-weight:600;
+    width:100%; min-height:70px; padding:13px; font-size:1.12rem; line-height:1.5; font-weight:600;
     border:2px solid var(--blank-line); border-radius:14px; background:#fff;
     color:var(--ink); font-family:inherit; resize:vertical; transition:.12s;
   }
@@ -308,6 +308,7 @@
     color:var(--muted); background:transparent; border:none; border-radius:9px; transition:.12s;
   }
   .seg button.active{background:var(--terra); color:#fff;}
+  .seg button:disabled{opacity:.4; cursor:not-allowed;}
   .vocab-progress{text-align:center; font-size:.84rem; color:var(--muted); margin-bottom:10px;}
   .vocab-progress b{color:var(--ink); font-size:1rem;}
 
@@ -331,6 +332,8 @@
   .flashcard.revealed .fc-answer{display:block; animation:pop .3s cubic-bezier(.22,1.4,.5,1);}
   .fc-hint{font-size:.76rem; color:var(--muted);}
   .flashcard.revealed .fc-hint{display:none;}
+  /* SER版：〜人は4形すべて表示するため語が長い。折り返し＆やや小さめに */
+  #vocabview .fc-answer{font-size:1.25rem; word-break:normal; overflow-wrap:break-word;}
 
   .vocab-nav{display:flex; gap:11px;}
   .vocab-nav .btn{min-height:50px;}
@@ -369,6 +372,12 @@
   }
 
   footer{font-size:.66rem; color:var(--muted); text-align:center; padding:16px 8px 0; position:relative; z-index:1;}
+
+  /* SER版の追加スタイル（一問一答・Nivel4・ヒント入力） */
+  .ja .ja-a{display:inline-block; font-size:.84em; color:var(--muted); font-weight:700; margin-top:2px;}
+  .qa-mark{flex-basis:100%; text-align:center; color:var(--muted); font-size:.82rem; font-weight:800; margin:3px 0;}
+  .l4-field{flex-basis:100%; width:100%; display:flex; flex-direction:column; gap:5px; margin-bottom:6px;}
+  .l4-label{font-size:.76rem; color:var(--muted); font-weight:700; text-align:left;}
 
   /* 狭いスマホ：1行に収まりやすいよう更に詰める */
   @media (max-width:400px){
@@ -422,8 +431,8 @@
     </svg>
     <div class="title-block">
       <div class="kicker">Gramática</div>
-      <h1>¡Yo hablo español!</h1>
-      <div class="sub">主語人称代名詞＋規則動詞の作文練習</div>
+      <h1>¡Soy estudiante!</h1>
+      <div class="sub">主語人称代名詞 ＋ 動詞 ser の作文練習</div>
     </div>
     <a class="app-switch" href="../index.html" title="アプリ選択へ戻る">選択</a>
   </header>
@@ -431,7 +440,7 @@
   <div class="hud">
     <div class="hud-bar">
       <div class="bar"><span class="bar-fill" id="progress-bar"></span></div>
-      <span class="hud-label">進捗 <b id="progress">1 / 25</b></span>
+      <span class="hud-label">進捗 <b id="progress">1 / 20</b></span>
     </div>
     <div class="hud-coin"><span class="coin-ico">⭐</span><b id="score">正解 0 / 0 問</b></div>
     <button class="btn-reset" id="btn-reset" title="進捗・スコアをリセット">↺</button>
@@ -482,11 +491,11 @@
 
     <div class="ref-bar" id="ref-bar">
       <button class="ref-btn" id="btn-ref-pron"><span class="ref-ico">📋</span>主語人称代名詞</button>
-      <button class="ref-btn" id="btn-ref-verb"><span class="ref-ico">📖</span><span id="ref-verb-label">活用</span></button>
+      <button class="ref-btn" id="btn-ref-verb"><span class="ref-ico">📖</span><span id="ref-verb-label">serの活用</span></button>
     </div>
   </main>
 
-  <footer>1セット25問・ランダム出題　¡Mucho ánimo! 🍀</footer>
+  <footer>1セット20問・自動生成　¡Mucho ánimo! 🍀</footer>
 </div>
 
 <!-- 選択肢シート -->
@@ -497,7 +506,7 @@
   </div>
 </div>
 
-<!-- 参照ビュー（活用表・人称代名詞表） -->
+<!-- 参照ビュー（serの活用・人称代名詞表） -->
 <div class="refview" id="refview">
   <div class="bunting"></div>
   <div class="refview-inner">
@@ -514,15 +523,15 @@
     <h2 class="vocab-h"><span class="vt-ico">📝</span>単語チェック</h2>
     <div class="vocab-modes">
       <div class="seg" id="seg-dir">
-        <button data-dir="es" class="active">西 → 日</button>
-        <button data-dir="ja">日 → 西</button>
+        <button data-dir="ja" class="active">日 → 西</button>
+        <button data-dir="es" disabled title="このアプリでは日→西のみ">西 → 日</button>
       </div>
       <div class="seg" id="seg-order">
         <button data-order="seq" class="active">順番</button>
         <button data-order="rand">ランダム</button>
       </div>
     </div>
-    <div class="vocab-progress"><b id="vocab-pos">1</b> / <span id="vocab-total">37</span></div>
+    <div class="vocab-progress"><b id="vocab-pos">1</b> / <span id="vocab-total">31</span></div>
     <div class="flashcard" id="flashcard">
       <div class="fc-cat" id="fc-cat"></div>
       <div class="fc-prompt" id="fc-prompt"></div>
@@ -541,139 +550,113 @@
 
 <script>
 /* =========================================================================
-   1. データ
+   1. データ（ser 作文練習）
    ========================================================================= */
 
-// 主語プール（全12種）。文中では先頭大文字で出る。
-const SUBJECTS = ["yo","tú","él","ella","usted","nosotros","nosotras","vosotros","vosotras","ellos","ellas","ustedes"];
+// 主語（Nivel 1/2 の出題用・14種）。日本語注記→スペイン語＋人称/数/性。
+const SUBJECTS = [
+  {ja:"私（男性）",     es:"Yo",       person:1, num:"sg", gen:"m"},
+  {ja:"私（女性）",     es:"Yo",       person:1, num:"sg", gen:"f"},
+  {ja:"君（男性）",     es:"Tú",       person:2, num:"sg", gen:"m"},
+  {ja:"君（女性）",     es:"Tú",       person:2, num:"sg", gen:"f"},
+  {ja:"彼",             es:"Él",       person:3, num:"sg", gen:"m"},
+  {ja:"彼女",           es:"Ella",     person:3, num:"sg", gen:"f"},
+  {ja:"あなた（男性）", es:"Usted",    person:3, num:"sg", gen:"m"},
+  {ja:"あなた（女性）", es:"Usted",    person:3, num:"sg", gen:"f"},
+  {ja:"私たち（男性）", es:"Nosotros", person:1, num:"pl", gen:"m"},
+  {ja:"私たち（女性）", es:"Nosotras", person:1, num:"pl", gen:"f"},
+  {ja:"君たち（男性）", es:"Vosotros", person:2, num:"pl", gen:"m"},
+  {ja:"君たち（女性）", es:"Vosotras", person:2, num:"pl", gen:"f"},
+  {ja:"あなた方（男性）", es:"Ustedes", person:3, num:"pl", gen:"m"},
+  {ja:"あなた方（女性）", es:"Ustedes", person:3, num:"pl", gen:"f"},
+];
 
-// 動詞ごとの目的語/場所プール（Nivel 3 の選択肢用）
-const OBJECT_POOLS = {
-  hablar:   ["español","inglés","japonés","chino"],
-  comer:    ["tomates","un huevo","una naranja","manzanas"],
-  vivir:    ["en Tokio","en Madrid","en Barcelona","en Buenos Aires"],
-  estudiar: ["español","inglés","japonés","chino"],
-  beber:    ["agua","vino","cerveza","leche"],
-  abrir:    ["la ventana","la puerta","el paquete","la boca"],
-  comprar:  ["un coche","flores","un regalo","una bicicleta"],
-  leer:     ["libros","un periódico","una revista","novelas"],
-  escribir: ["cartas","correos","una postal","un mensaje"],
+// ser の活用（不規則・固定）
+const SER_FORMS = {
+  "Yo":"soy", "Tú":"eres", "Él":"es", "Ella":"es", "Usted":"es",
+  "Nosotros":"somos", "Nosotras":"somos", "Vosotros":"sois", "Vosotras":"sois",
+  "Ellos":"son", "Ellas":"son", "Ustedes":"son",
 };
+const SER_ALL = ["soy","eres","es","somos","sois","son"];
+function serForm(subjES){ return SER_FORMS[subjES]; }
 
-const ALL_VERBS = Object.keys(OBJECT_POOLS);
+// 主語人称代名詞プール（選択肢の distractor 用・12種）
+const SUBJ_POOL = ["Yo","Tú","Él","Ella","Usted","Nosotros","Nosotras","Vosotros","Vosotras","Ellos","Ellas","Ustedes"];
+// 性別だけが異なる同一人称ペア（選択肢に両方並ぶと「どちらも正解」になるため排他）
+const SUBJ_PAIRS = [["Nosotros","Nosotras"], ["Vosotros","Vosotras"], ["Ellos","Ellas"]];
+function pairPartner(s){ for(const [a,b] of SUBJ_PAIRS){ if(s===a) return b; if(s===b) return a; } return null; }
 
-// 動詞の日本語訳（活用表のタイトル用）
-const VERB_JA = {
-  hablar:"話す", comer:"食べる", vivir:"住む", estudiar:"勉強する", beber:"飲む",
-  abrir:"開ける", comprar:"買う", leer:"読む", escribir:"書く",
-};
+// 補語：学生 / 先生（性・数で変化）
+function estudianteForm(gen, num){ return num === "pl" ? "estudiantes" : "estudiante"; }
+function profesorForm(gen, num){
+  if(gen === "m") return num === "pl" ? "profesores" : "profesor";
+  return num === "pl" ? "profesoras" : "profesora";
+}
+const ESTUDIANTE_CHOICES = ["estudiante","estudiantes"];
+const PROFESOR_CHOICES   = ["profesor","profesora","profesores","profesoras"];
 
-// 単語チェック用の語彙（指定順）。g は性別/種別タグ（動詞は空）
+// 補語：国籍（出題に使うのは4つ）。性×数の4形。
+const NATIONS = [
+  {ja:"日本人",   forms:{m_sg:"japonés", f_sg:"japonesa", m_pl:"japoneses", f_pl:"japonesas"}},
+  {ja:"スペイン人", forms:{m_sg:"español", f_sg:"española", m_pl:"españoles", f_pl:"españolas"}},
+  {ja:"フランス人", forms:{m_sg:"francés", f_sg:"francesa", m_pl:"franceses", f_pl:"francesas"}},
+  {ja:"中国人",   forms:{m_sg:"chino", f_sg:"china", m_pl:"chinos", f_pl:"chinas"}},
+];
+function natForm(nat, gen, num){ return nat.forms[gen + "_" + num]; }
+function natChoices(nat){ return [nat.forms.m_sg, nat.forms.f_sg, nat.forms.m_pl, nat.forms.f_pl]; }
+
+// 補語を1つ選ぶ（学生 / 先生 / 国籍）。gen,num は主語に一致。
+function pickComplement(gen, num){
+  const roll = Math.random();
+  if(roll < 0.34){
+    return { key:"estudiante", jaLabel:"学生", correct:estudianteForm(gen,num), choices:ESTUDIANTE_CHOICES.slice() };
+  } else if(roll < 0.67){
+    return { key:"profesor", jaLabel:"先生", correct:profesorForm(gen,num), choices:PROFESOR_CHOICES.slice() };
+  } else {
+    const nat = NATIONS[Math.floor(Math.random()*NATIONS.length)];
+    return { key:"nation", jaLabel:nat.ja, correct:natForm(nat,gen,num), choices:natChoices(nat) };
+  }
+}
+
+// 単語チェック用の語彙（指定順・日→西のみ）。〜人は男女単複4形すべて表示。
 const VOCAB = [
-  // 動詞
-  {es:"hablar", ja:"話す"},
-  {es:"comer", ja:"食べる"},
-  {es:"vivir", ja:"住む、生きる"},
-  {es:"estudiar", ja:"勉強する"},
-  {es:"beber", ja:"飲む"},
-  {es:"abrir", ja:"開ける、開く"},
-  {es:"comprar", ja:"買う"},
-  {es:"leer", ja:"読む"},
-  {es:"escribir", ja:"書く"},
-  // 名詞：言語
-  {es:"español", ja:"スペイン語", g:"男"},
-  {es:"inglés", ja:"英語", g:"男"},
-  {es:"japonés", ja:"日本語", g:"男"},
-  {es:"chino", ja:"中国語", g:"男"},
-  // 名詞：食べもの・飲みもの
-  {es:"tomate", ja:"トマト", g:"男"},
-  {es:"huevo", ja:"たまご", g:"男"},
-  {es:"naranja", ja:"オレンジ", g:"女"},
-  {es:"manzana", ja:"りんご", g:"女"},
-  {es:"agua", ja:"水", g:"女"},
-  {es:"vino", ja:"ワイン", g:"男"},
-  {es:"cerveza", ja:"ビール", g:"女"},
-  {es:"leche", ja:"牛乳", g:"女"},
-  // 名詞：都市名
-  {es:"Tokio", ja:"東京", g:"固有"},
-  {es:"Madrid", ja:"マドリード（スペインの首都）", g:"固有"},
-  {es:"Barcelona", ja:"バルセロナ（スペインの都市）", g:"固有"},
-  {es:"Buenos Aires", ja:"ブエノスアイレス（アルゼンチンの首都）", g:"固有"},
-  // 名詞：その他
-  {es:"coche", ja:"車", g:"男"},
-  {es:"bicicleta", ja:"自転車", g:"女"},
-  {es:"flor", ja:"花", g:"女"},
-  {es:"regalo", ja:"プレゼント", g:"男"},
-  {es:"libro", ja:"本", g:"男"},
-  {es:"revista", ja:"雑誌", g:"女"},
-  {es:"novela", ja:"小説", g:"女"},
-  {es:"periódico", ja:"新聞", g:"男"},
-  {es:"carta", ja:"手紙", g:"女"},
-  {es:"correo", ja:"メール、郵便", g:"男"},
-  {es:"mensaje", ja:"メッセージ", g:"男"},
-  {es:"postal", ja:"絵はがき", g:"女"},
+  {ja:"学生", es:"estudiante", cat:"名詞（職業・身分）"},
+  {ja:"先生", es:"profesor / profesora", cat:"名詞（職業・身分）"},
+  {ja:"日本", es:"Japón", cat:"名詞（国名）"},
+  {ja:"日本人", es:"japonés / japonesa / japoneses / japonesas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"日本語", es:"japonés", cat:"名詞（言語）"},
+  {ja:"中国", es:"China", cat:"名詞（国名）"},
+  {ja:"中国人", es:"chino / china / chinos / chinas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"中国語", es:"chino", cat:"名詞（言語）"},
+  {ja:"朝鮮（韓国）", es:"Corea", cat:"名詞（国名）"},
+  {ja:"朝鮮（韓国）人", es:"coreano / coreana / coreanos / coreanas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"朝鮮（韓国）語", es:"coreano", cat:"名詞（言語）"},
+  {ja:"スペイン", es:"España", cat:"名詞（国名）"},
+  {ja:"スペイン人", es:"español / española / españoles / españolas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"スペイン語", es:"español", cat:"名詞（言語）"},
+  {ja:"イギリス（イングランド）", es:"Inglaterra", cat:"名詞（国名）"},
+  {ja:"イギリス（イングランド）人", es:"inglés / inglesa / ingleses / inglesas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"英語", es:"inglés", cat:"名詞（言語）"},
+  {ja:"ドイツ", es:"Alemania", cat:"名詞（国名）"},
+  {ja:"ドイツ人", es:"alemán / alemana / alemanes / alemanas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"ドイツ語", es:"alemán", cat:"名詞（言語）"},
+  {ja:"フランス", es:"Francia", cat:"名詞（国名）"},
+  {ja:"フランス人", es:"francés / francesa / franceses / francesas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"フランス語", es:"francés", cat:"名詞（言語）"},
+  {ja:"メキシコ", es:"México", cat:"名詞（国名）"},
+  {ja:"メキシコ人", es:"mexicano / mexicana / mexicanos / mexicanas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"ペルー", es:"Perú", cat:"名詞（国名）"},
+  {ja:"ペルー人", es:"peruano / peruana / peruanos / peruanas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"アルゼンチン", es:"Argentina", cat:"名詞（国名）"},
+  {ja:"アルゼンチン人", es:"argentino / argentina / argentinos / argentinas", cat:"名詞（国籍・男/女/男複/女複）"},
+  {ja:"米国", es:"Estados Unidos", cat:"名詞（国名）"},
+  {ja:"米国人", es:"estadounidense / estadounidenses（男女同形・単/複）", cat:"名詞（国籍）"},
 ];
-
-// マスターデータ（全48問）。#36 は仕様書の誤記を修正済み（Ellas escriben un mensaje.）
-const MASTER = [
-  {id:1, ja:"私はスペイン語を話します。",            es:"Yo hablo español.",                 verb:"hablar"},
-  {id:2, ja:"君は英語を話しますか？",                es:"¿Tú hablas inglés?",                verb:"hablar"},
-  {id:3, ja:"私たち（男性）は日本語を話しません。",  es:"Nosotros no hablamos japonés.",     verb:"hablar"},
-  {id:4, ja:"彼らは中国語を話します。",              es:"Ellos hablan chino.",               verb:"hablar"},
-  {id:5, ja:"彼はトマトを食べない。",                es:"Él no come tomates.",               verb:"comer"},
-  {id:6, ja:"彼女はたまごを食べる。",                es:"Ella come un huevo.",               verb:"comer"},
-  {id:7, ja:"私たち（女性）はオレンジを食べる。",    es:"Nosotras comemos una naranja.",     verb:"comer"},
-  {id:8, ja:"彼女たちはリンゴを食べない。",          es:"Ellas no comen manzanas.",          verb:"comer"},
-  {id:9, ja:"あなたは東京に住んでいます。",          es:"Usted vive en Tokio.",              verb:"vivir"},
-  {id:10,ja:"彼はマドリードに住んでいない。",        es:"Él no vive en Madrid.",             verb:"vivir"},
-  {id:11,ja:"あなた方はバルセロナに住んでいますか？",es:"¿Ustedes viven en Barcelona?",      verb:"vivir"},
-  {id:12,ja:"君たち（女性）はブエノスアイレスに住んでいる。",es:"Vosotras vivís en Buenos Aires.",verb:"vivir"},
-  {id:13,ja:"私は中国語を勉強しません。",            es:"Yo no estudio chino.",              verb:"estudiar"},
-  {id:14,ja:"君はスペイン語を勉強します。",          es:"Tú estudias español.",              verb:"estudiar"},
-  {id:15,ja:"私たち（男性）は英語を勉強します。",    es:"Nosotros estudiamos inglés.",       verb:"estudiar"},
-  {id:16,ja:"あなた方は日本語を勉強しません。",      es:"Ustedes no estudian japonés.",      verb:"estudiar"},
-  {id:17,ja:"彼女は水を飲む。",                      es:"Ella bebe agua.",                   verb:"beber"},
-  {id:18,ja:"君はワインを飲むの？",                  es:"¿Tú bebes vino?",                   verb:"beber"},
-  {id:19,ja:"君たち（男性）はビールを飲まない。",    es:"Vosotros no bebéis cerveza.",       verb:"beber"},
-  {id:20,ja:"彼らは牛乳を飲む。",                    es:"Ellos beben leche.",                verb:"beber"},
-  {id:21,ja:"あなたは口を開けない。",                es:"Usted no abre la boca.",            verb:"abrir"},
-  {id:22,ja:"私は小包を開ける。",                    es:"Yo abro el paquete.",               verb:"abrir"},
-  {id:23,ja:"私たち（男性）は窓を開ける。",          es:"Nosotros abrimos la ventana.",      verb:"abrir"},
-  {id:24,ja:"彼女たちはドアを開けない。",            es:"Ellas no abren la puerta.",         verb:"abrir"},
-  {id:25,ja:"私は車を買う。",                        es:"Yo compro un coche.",               verb:"comprar"},
-  {id:26,ja:"君は花を買わない。",                    es:"Tú no compras flores.",             verb:"comprar"},
-  {id:27,ja:"あなた方はプレゼントを買いますか？",    es:"¿Ustedes compran un regalo?",       verb:"comprar"},
-  {id:28,ja:"君たち（女性）は自転車を買う。",        es:"Vosotras compráis una bicicleta.",  verb:"comprar"},
-  {id:29,ja:"彼は本を読まない。",                    es:"Él no lee libros.",                 verb:"leer"},
-  {id:30,ja:"彼女は新聞を読む。",                    es:"Ella lee un periódico.",            verb:"leer"},
-  {id:31,ja:"あなた方は雑誌を読む。",                es:"Ustedes leen una revista.",         verb:"leer"},
-  {id:32,ja:"彼らは小説を読まない。",                es:"Ellos no leen novelas.",            verb:"leer"},
-  {id:33,ja:"彼女は手紙を書きます。",                es:"Ella escribe cartas.",              verb:"escribir"},
-  {id:34,ja:"あなたはメールを書きません。",          es:"Usted no escribe correos.",         verb:"escribir"},
-  {id:35,ja:"君たち（男性）は絵はがきを書くの？",    es:"¿Vosotros escribís una postal?",    verb:"escribir"},
-  {id:36,ja:"彼女たちはメッセージを書きます。",      es:"Ellas escriben un mensaje.",        verb:"escribir"},
-  {id:37,ja:"彼はスペイン語を話します。",            es:"Él habla español.",                 verb:"hablar"},
-  {id:38,ja:"私たち（男性）は英語を話しません。",    es:"Nosotros no hablamos inglés.",      verb:"hablar"},
-  {id:39,ja:"私はリンゴを食べない。",                es:"Yo no como manzanas.",              verb:"comer"},
-  {id:40,ja:"君たち（男性）はたまごを食べる。",      es:"Vosotros coméis un huevo.",         verb:"comer"},
-  {id:41,ja:"君はマドリードに住んでいる。",          es:"Tú vives en Madrid.",               verb:"vivir"},
-  {id:42,ja:"彼らは東京に住んでいない。",            es:"Ellos no viven en Tokio.",          verb:"vivir"},
-  {id:43,ja:"彼はビールを飲まない。",                es:"Él no bebe cerveza.",               verb:"beber"},
-  {id:44,ja:"私たち（女性）は水を飲みます。",        es:"Nosotras bebemos agua.",            verb:"beber"},
-  {id:45,ja:"彼女は小包を開ける。",                  es:"Ella abre el paquete.",             verb:"abrir"},
-  {id:46,ja:"君たち（女性）はドアを開けない。",      es:"Vosotras no abrís la puerta.",      verb:"abrir"},
-  {id:47,ja:"あなたはプレゼントを買いますか？",      es:"¿Usted compra un regalo?",          verb:"comprar"},
-  {id:48,ja:"彼女たちは手紙を書かない。",            es:"Ellas no escriben cartas.",         verb:"escribir"},
-];
-// 音声ID（phrase_01〜phrase_48）を id から付与
-MASTER.forEach(m => m.audioId = "phrase_" + String(m.id).padStart(2,"0"));
 
 
 /* =========================================================================
    2. 共通ロジック
    ========================================================================= */
-
-// Fisher–Yates シャッフル（非破壊）
 function shuffle(arr){
   const a = arr.slice();
   for(let i=a.length-1;i>0;i--){
@@ -682,142 +665,109 @@ function shuffle(arr){
   }
   return a;
 }
-
-// 先頭大文字化
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
-
 // 厳格一致判定（大小文字・アクセント・記号をそのまま比較。前後空白のみ無視）
 function strictEqual(input, answer){
   return (input ?? "").trim() === (answer ?? "").trim();
 }
 
-// 文の分解：[¿] 主語 [no] 動詞 目的語 [./?]
-function parsePhrase(es){
-  let s = es.trim();
-  let prefix = "", suffix = "";
-  if(s.startsWith("¿")){ prefix = "¿"; s = s.slice(1); }
-  const last = s.slice(-1);
-  if(last === "?" || last === "." || last === "!"){ suffix = last; s = s.slice(0,-1); }
-  const tok = s.trim().split(/\s+/);
-  const subject = tok[0];
-  let neg = "", verb, object;
-  if(tok[1] === "no"){ neg = "no"; verb = tok[2]; object = tok.slice(3).join(" "); }
-  else              { verb = tok[1];           object = tok.slice(2).join(" "); }
-  return { prefix, subject, neg, verb, object, suffix };
-}
-
-// Nivel 4 用の柔軟な判定：
-// ・yo/tú/nosotros(as)/vosotros(as) は主語を省略しても正解
-// ・主語の位置が文中で変わっても正解（動詞・否定・目的語の語順・表記は厳格）
-// ・3人称（él/ella/usted/ellos/ellas/ustedes）は主語が無い・誤りだと不正解
-const THIRD_PERSON_SUBJECTS = ["él","el","ella","usted","ellos","ellas","ustedes"];
-function judgeLevel4(value, P){
-  let s = (value ?? "").trim();
-
-  const hasPrefix = s.startsWith("¿");
-  if(hasPrefix !== !!P.prefix) return false;
-  if(hasPrefix) s = s.slice(1);
-
-  const last = s.slice(-1);
-  if(last !== P.suffix) return false; // 末尾記号（. ? !）は厳格
-  s = s.slice(0, -1);
-
-  const tokens = s.trim().split(/\s+/).filter(Boolean);
-
-  // 主語トークンを探す（大小文字を区別せず・最初の一致のみ除去）
-  const subjLower = P.subject.toLowerCase();
-  const subjIdx = tokens.findIndex(t => t.toLowerCase() === subjLower);
-  const subjectFound = subjIdx !== -1;
-  const subjectWasFirst = subjIdx === 0;
-  if(subjectFound) tokens.splice(subjIdx, 1);
-
-  if(THIRD_PERSON_SUBJECTS.includes(subjLower) && !subjectFound) return false; // 3人称は主語必須
-
-  const required = [];
-  if(P.neg) required.push("no");
-  required.push(P.verb);
-  required.push(...P.object.split(/\s+/));
-
-  if(tokens.length !== required.length) return false;
-
-  for(let i = 0; i < required.length; i++){
-    if(i === 0 && !subjectWasFirst){
-      // 主語省略／移動により文頭になった語：大文字始まり違いのみ許容
-      if(tokens[i].toLowerCase() !== required[i].toLowerCase()) return false;
-    }else{
-      if(tokens[i] !== required[i]) return false; // それ以外は厳格（アクセント・大小文字含む）
-    }
-  }
-  return true;
-}
-
-// 規則活用（9動詞すべて規則）。infinitive と subject から活用形を返す
-const ENDINGS = {
-  ar:["o","as","a","amos","áis","an"],
-  er:["o","es","e","emos","éis","en"],
-  ir:["o","es","e","imos","ís","en"],
-};
-function personSlot(subject){
-  const s = subject.toLowerCase();
-  if(s === "yo") return 0;
-  if(s === "tú" || s === "tu") return 1;
-  if(["él","el","ella","usted"].includes(s)) return 2;
-  if(["nosotros","nosotras"].includes(s)) return 3;
-  if(["vosotros","vosotras"].includes(s)) return 4;
-  return 5; // ellos / ellas / ustedes
-}
-function conjugate(infinitive, subject){
-  const stem = infinitive.slice(0,-2);
-  const type = infinitive.slice(-2);
-  return stem + ENDINGS[type][personSlot(subject)];
-}
-
-// 性別だけが異なる同一人称ペア（両方が選択肢に並ぶと「どちらも正解」になってしまうため排他）
-const SUBJECT_PAIRS = [["nosotros","nosotras"], ["vosotros","vosotras"]];
-function pairPartner(subject){
-  const s = subject.toLowerCase();
-  for(const [a,b] of SUBJECT_PAIRS){
-    if(s === a) return b;
-    if(s === b) return a;
-  }
-  return null;
-}
-
-// 主語の4択（正解＋プールから3。nosotros/nosotras や vosotros/vosotras が同時に並ばないようにする）
-function subjectChoices(P){
-  const correct = P.subject;
-  let pool = SUBJECTS.filter(s => s !== correct.toLowerCase());
-  const correctPartner = pairPartner(correct);
-  if(correctPartner) pool = pool.filter(s => s !== correctPartner); // 正解の対となる性別形は除外
-
+// 主語の4択（正解＋プールから3。性ペアが同時に並ばないようにする）
+function subjectChoices(correct){
+  let pool = SUBJ_POOL.filter(s => s !== correct);
+  const partner = pairPartner(correct);
+  if(partner) pool = pool.filter(s => s !== partner);
   const chosen = [];
   for(const s of shuffle(pool)){
     if(chosen.length >= 3) break;
-    const partner = pairPartner(s);
-    if(partner && chosen.includes(partner)) continue; // 既に選んだ語のペア相手はスキップ
+    const p = pairPartner(s);
+    if(p && chosen.includes(p)) continue;
     chosen.push(s);
   }
-  return shuffle([correct, ...chosen.map(cap)]);
+  return shuffle([correct, ...chosen]);
 }
-
-// 動詞の4択（Nivel 1専用：同じ動詞の他人称の活用形のみ。他動詞は混ぜない）
-function verbChoicesSameVerb(item, P){
-  const correct = P.verb;
-  const forms = new Set();
-  for(const subj of SUBJECTS) forms.add(conjugate(item.verb, subj));
-  forms.delete(correct);
-  const distractors = shuffle([...forms]).slice(0,3);
-  return shuffle([correct, ...distractors]);
-}
-
-// 目的語の4択（動詞プール4語を毎回シャッフル。正解は必ず含まれる）
-function objectChoices(item){
-  return shuffle(OBJECT_POOLS[item.verb].slice());
+// ser の4択（6形から正解＋3）
+function serChoices(correct){
+  const pool = SER_ALL.filter(f => f !== correct);
+  return shuffle([correct, ...shuffle(pool).slice(0,3)]);
 }
 
 
 /* =========================================================================
-   3. 音声（mp3優先・無ければ端末の音声合成で代替）
+   3. 出題ジェネレータ
+   ========================================================================= */
+// A) Nivel 1・2：単文（主語 ser 補語。肯定/否定/疑問）
+function genStatement(){
+  const subj = SUBJECTS[Math.floor(Math.random()*SUBJECTS.length)];
+  const comp = pickComplement(subj.gen, subj.num);
+  const ser  = serForm(subj.es);
+
+  const r = Math.random();
+  let neg = false, mood = "stmt";
+  if(r < 0.65){ neg = false; mood = "stmt"; }
+  else if(r < 0.83){ neg = false; mood = "q"; }
+  else { neg = true; mood = "stmt"; }
+
+  let ja;
+  if(mood === "q") ja = subj.ja + "は" + comp.jaLabel + "ですか？";
+  else if(neg)     ja = subj.ja + "は" + comp.jaLabel + "ではありません。";
+  else             ja = subj.ja + "は" + comp.jaLabel + "です。";
+
+  const prefix = (mood === "q") ? "¿" : "";
+  const suffix = (mood === "q") ? "?" : ".";
+  const es = prefix + subj.es + " " + (neg ? "no " : "") + ser + " " + comp.correct + suffix;
+
+  return {
+    kind:"stmt", ja, es,
+    P:{ prefix, subject:subj.es, neg:(neg ? "no" : ""), verb:ser, object:comp.correct, suffix },
+    compChoices: comp.choices,
+  };
+}
+
+// 一問一答の主語対応（疑問文→答え）
+const QA_SUBJECTS = [
+  {qJa:"君（男性）", qGen:"m", qNum:"sg", qES:"Tú",       qShow:false, aJa:"私",       aES:"Yo"},
+  {qJa:"君（女性）", qGen:"f", qNum:"sg", qES:"Tú",       qShow:false, aJa:"私",       aES:"Yo"},
+  {qJa:"君たち（男性）", qGen:"m", qNum:"pl", qES:"Vosotros", qShow:false, aJa:"私たち", aES:"Nosotros"},
+  {qJa:"君たち（女性）", qGen:"f", qNum:"pl", qES:"Vosotras", qShow:false, aJa:"私たち", aES:"Nosotras"},
+  {qJa:"あなた（男性）", qGen:"m", qNum:"sg", qES:"Usted",  qShow:true, aJa:"私",       aES:"Yo"},
+  {qJa:"あなた（女性）", qGen:"f", qNum:"sg", qES:"Usted",  qShow:true, aJa:"私",       aES:"Yo"},
+  {qJa:"あなた方（男性）", qGen:"m", qNum:"pl", qES:"Ustedes", qShow:true, aJa:"私たち", aES:"Nosotros"},
+  {qJa:"あなた方（女性）", qGen:"f", qNum:"pl", qES:"Ustedes", qShow:true, aJa:"私たち", aES:"Nosotras"},
+  {qJa:"彼",       qGen:"m", qNum:"sg", qES:"Él",       qShow:true, aJa:"彼",       aES:"Él"},
+  {qJa:"彼女",     qGen:"f", qNum:"sg", qES:"Ella",     qShow:true, aJa:"彼女",     aES:"Ella"},
+  {qJa:"彼ら",     qGen:"m", qNum:"pl", qES:"Ellos",    qShow:true, aJa:"彼ら",     aES:"Ellos"},
+  {qJa:"彼女ら",   qGen:"f", qNum:"pl", qES:"Ellas",    qShow:true, aJa:"彼女ら",   aES:"Ellas"},
+];
+
+// B) Nivel 3・4：一問一答
+function genQA(){
+  const qs = QA_SUBJECTS[Math.floor(Math.random()*QA_SUBJECTS.length)];
+  const comp = pickComplement(qs.qGen, qs.qNum); // 疑問文と答えは同じ性・数
+  const aSer = serForm(qs.aES);
+  const yes  = Math.random() < 0.5;
+
+  const jaQ = qs.qJa + "は" + comp.jaLabel + "ですか？";
+  const jaA = (yes ? "はい、" : "いいえ、") + qs.aJa + "は" + comp.jaLabel + (yes ? "です。" : "ではありません。");
+
+  const qSubjShown = qs.qShow ? qs.qES : null;
+  // 主語省略時は ser の活用形が文頭に来るため大文字始まりにする
+  const qSer = qSubjShown ? serForm(qs.qES) : cap(serForm(qs.qES));
+  const aYN  = yes ? "Sí" : "No";
+  const aNeg = !yes;
+
+  const esQ = "¿" + (qSubjShown ? qSubjShown + " " : "") + qSer + " " + comp.correct + "?";
+  const esA = aYN + ", " + (aNeg ? "no " : "") + aSer + " " + comp.correct + ".";
+
+  return {
+    kind:"qa", jaQ, jaA, esQ, esA,
+    q:{ subjES:qSubjShown, ser:qSer, comp:comp.correct, compChoices:comp.choices },
+    a:{ yn:aYN, neg:aNeg, ser:aSer, comp:comp.correct, compChoices:comp.choices },
+  };
+}
+
+
+/* =========================================================================
+   4. 音声（端末の音声合成・es-ES）
    ========================================================================= */
 function speak(text){
   if(!("speechSynthesis" in window)) return;
@@ -830,31 +780,10 @@ function speak(text){
     speechSynthesis.speak(u);
   }catch(e){ /* 何もできない環境では無視 */ }
 }
-// 一部ブラウザは voices が遅延ロードされるため事前にウォームアップ
 if("speechSynthesis" in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=>speechSynthesis.getVoices(); }
 
-function playAudio(item){
-  let usedFallback = false;
-  const fallback = ()=>{ if(!usedFallback){ usedFallback = true; speak(item.es); } };
-  try{
-    const audio = new Audio("assets/audio/" + item.audioId + ".mp3");
-    audio.addEventListener("error", fallback, {once:true});
-    audio.play().catch(fallback);
-  }catch(e){ fallback(); }
-}
-
-function conjugationText(inf){
-  return ["yo","tú","él","nosotros","vosotros","ellos"].map(s => conjugate(inf, s)).join(", ");
-}
-
-function playConjugationAudio(inf){
-  let usedFallback = false;
-  const fallback = ()=>{ if(!usedFallback){ usedFallback = true; speak(conjugationText(inf)); } };
-  try{
-    const audio = new Audio("assets/audio/conjugation/" + inf + ".mp3");
-    audio.addEventListener("error", fallback, {once:true});
-    audio.play().catch(fallback);
-  }catch(e){ fallback(); }
+function currentSpeakText(prob){
+  return prob.kind === "qa" ? (prob.esQ + ". " + prob.esA) : prob.es;
 }
 
 const PRONOUN_AUDIO_TEXT = {
@@ -872,36 +801,41 @@ function playPronounAudio(group){
   }catch(e){ fallback(); }
 }
 
+function playSerAudio(){
+  let usedFallback = false;
+  const fallback = ()=>{ if(!usedFallback){ usedFallback = true; speak("soy, eres, es, somos, sois, son"); } };
+  try{
+    const audio = new Audio("assets/audio/conjugation/ser.mp3");
+    audio.addEventListener("error", fallback, {once:true});
+    audio.play().catch(fallback);
+  }catch(e){ fallback(); }
+}
+
 
 /* =========================================================================
-   4. 状態とサイクル
+   5. 状態とサイクル
    ========================================================================= */
-const SAVE_KEY = "es-trainer-v2"; // 仕様変更（25問ラウンド・レベル別）でキー更新
-const ROUND = 25;                 // 1ラウンドの出題数（全48問からランダム抽出）
+const SAVE_KEY = "ser-trainer-v1";
+const ROUND = 20;
 
-// 全48問からランダムに ROUND 問を選んだ出題キューを作る
-function newRoundQueue(){
-  return shuffle(MASTER.map((_,i)=>i)).slice(0, ROUND);
-}
+function genForLevel(lv){ return (lv >= 3) ? genQA() : genStatement(); }
+function newRoundQueue(lv){ const q = []; for(let i=0;i<ROUND;i++) q.push(genForLevel(lv)); return q; }
 
 const state = {
   level: 1,
-  // レベルごとに独立したラウンド {queue, pos}（25問×4レベル）
   rounds: { 1:null, 2:null, 3:null, 4:null },
   isAnswered: false,
   scoreOK: 0,
   scoreTotal: 0,
-  // 今の問題の選択値
-  sel: { subject:null, verb:null, object:null },
+  sel: {},        // Nivel 1 の選択枠の選択値
+  expected: {},   // slot -> 正解文字列
   current: null,
-  P: null,
 };
 
-// 現在レベルのラウンド（無ければ新規25問を抽選）
 function curRound(){
   let r = state.rounds[state.level];
   if(!r || !Array.isArray(r.queue) || r.queue.length !== ROUND){
-    r = { queue:newRoundQueue(), pos:0 };
+    r = { queue:newRoundQueue(state.level), pos:0 };
     state.rounds[state.level] = r;
   }
   return r;
@@ -922,7 +856,7 @@ function load(){
       for(const lv of [1,2,3,4]){
         const r = d.rounds[lv];
         if(r && Array.isArray(r.queue) && r.queue.length === ROUND
-           && r.queue.every(i => Number.isInteger(i) && i >= 0 && i < MASTER.length)){
+           && r.queue.every(p => p && (p.kind === "stmt" || p.kind === "qa"))){
           state.rounds[lv] = { queue:r.queue, pos:(r.pos >= 0 && r.pos < ROUND) ? r.pos : 0 };
         }
       }
@@ -933,10 +867,8 @@ function load(){
 
 function loadCurrent(){
   const r = curRound();
-  state.current = MASTER[r.queue[r.pos]];
-  state.P = parsePhrase(state.current.es);
+  state.current = r.queue[r.pos];
   state.isAnswered = false;
-  state.sel = { subject:null, verb:null, object:null };
   render();
 }
 
@@ -944,7 +876,7 @@ function nextQuestion(){
   const r = curRound();
   r.pos++;
   if(r.pos >= r.queue.length){
-    state.rounds[state.level] = { queue:newRoundQueue(), pos:0 }; // ラウンド終了 → 新しい25問を抽選
+    state.rounds[state.level] = { queue:newRoundQueue(state.level), pos:0 };
   }
   save();
   loadCurrent();
@@ -955,26 +887,22 @@ function historyBack(){
   const r = curRound();
   if(r.pos === 0) return;
   r.pos--;
-  state.current = MASTER[r.queue[r.pos]];
-  state.P = parsePhrase(state.current.es);
+  state.current = r.queue[r.pos];
   state.isAnswered = false;
-  state.sel = {subject:null, verb:null, object:null};
-  render(); // 通常描画でUIをリセット
-  // 即座に正解を表示（採点なし）
+  render();
   state.isAnswered = true;
   btnAnswer.style.display = "none";
   btnNext.style.display = "";
   btnAudio.disabled = false;
   elFeedback.className = "feedback show ok";
-  elFeedback.innerHTML = '📖 前の問題の正解：<span class="correct">'
-    + state.current.es + '<small>' + state.current.ja + '</small></span>';
+  elFeedback.innerHTML = '📖 前の問題の正解：<span class="correct">' + correctHTML(state.current) + '</span>';
   if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; }
   save();
 }
 
 
 /* =========================================================================
-   5. 描画
+   6. 描画
    ========================================================================= */
 const $ = id => document.getElementById(id);
 const elJa = $("ja"), elHint = $("hint"), elSentence = $("sentence"),
@@ -983,11 +911,10 @@ const elJa = $("ja"), elHint = $("hint"), elSentence = $("sentence"),
       elProgressBar = $("progress-bar"), elMascot = $("mascot"), elConfetti = $("confetti"),
       btnAnswer = $("btn-answer"), btnNext = $("btn-next"), btnAudio = $("btn-audio"),
       btnPrev = $("btn-prev"), btnReset = $("btn-reset"),
-      btnRefPron = $("btn-ref-pron"), btnRefVerb = $("btn-ref-verb"), refVerbLabel = $("ref-verb-label"),
+      btnRefPron = $("btn-ref-pron"), btnRefVerb = $("btn-ref-verb"),
       elRefview = $("refview"), elRefContent = $("ref-content"),
       elSelfJudge = $("self-judge"), btnSjOk = $("btn-sj-ok"), btnSjNg = $("btn-sj-ng");
 
-// マスコットの表情切替（idle / happy / sad）
 function setMascot(mood){
   if(!elMascot) return;
   elMascot.classList.remove("happy","sad","idle","bounce");
@@ -995,7 +922,6 @@ function setMascot(mood){
   if(mood === "happy"){ void elMascot.offsetWidth; elMascot.classList.add("bounce"); }
 }
 
-// 正解時の紙吹雪
 function popConfetti(){
   if(!elConfetti) return;
   const colors = ["#E2664B","#F4B73E","#2FB6A8","#F08A6B","#C25BA0","#5BA85C"];
@@ -1012,56 +938,55 @@ function popConfetti(){
   }
 }
 
-let lastFocused = null; // アクセント補助バーの挿入先
+let lastFocused = null;      // アクセント補助バーの挿入先
+let pendingHintInput = null; // ヒントシートを開いた入力欄
 
 const HINTS = {
   1:"空欄をタップして選びましょう",
-  2:"空欄に直接入力しましょう（アクセントも正確に）",
-  3:"主語と動詞は入力、最後の空欄はタップで選択",
-  4:"全文をスペイン語で書きましょう（ピリオド・疑問符・アクセント符号なども正確に）",
+  2:"空欄に直接入力（補語はタップでヒント）。アクセントも正確に",
+  3:"主語・ser・はい/いいえ は入力、補語はタップでヒント",
+  4:"質問文と答え文を全文スペイン語で書きましょう",
 };
 
 function render(){
-  const {level, P, current} = state;
+  const {level} = state;
+  const prob = state.current;
   const r = curRound();
-  elJa.textContent = current.ja;
+
+  elJa.innerHTML = (prob.kind === "qa")
+    ? (prob.jaQ + '<br><span class="ja-a">── ' + prob.jaA + '</span>')
+    : prob.ja;
   elHint.textContent = HINTS[level];
   elProgress.textContent = (r.pos+1) + " / " + ROUND;
   elScore.textContent = "正解 " + state.scoreOK + " / " + state.scoreTotal + " 問";
   if(elProgressBar) elProgressBar.style.width = ((r.pos+1)/ROUND*100).toFixed(1) + "%";
   setMascot("idle");
 
-  // タブ表示
   document.querySelectorAll("#levels button").forEach(b=>{
     b.classList.toggle("active", Number(b.dataset.level) === level);
   });
 
-  // フィードバック・ボタン初期化
-  elFeedback.className = "feedback";
-  elFeedback.innerHTML = "";
+  elFeedback.className = "feedback"; elFeedback.innerHTML = ""; elFeedback.style.background = "";
   elSelfJudge.style.display = "none";
-  btnAnswer.style.display = "";
-  btnAnswer.disabled = false;
+  btnAnswer.style.display = ""; btnAnswer.disabled = false;
   btnNext.style.display = "none";
   btnAudio.disabled = true;
-  btnPrev.disabled = (r.pos === 0); // ラウンド最初は戻れない
+  btnPrev.disabled = (r.pos === 0);
 
-  // 参照ボタン（主語人称代名詞・活用表）：Nivel 1/2 は常時表示、Nivel 3/4 は解答後に表示
-  refVerbLabel.textContent = current.verb + "の活用";
-  btnRefVerb.hidden = (level >= 3); // 3/4 は解答後に finishAnswer で表示
+  // 参照ボタン：Nivel 1/2 常時・Nivel 3/4 は解答後に表示
+  btnRefVerb.hidden = (level >= 3);
   btnRefPron.hidden = (level >= 3);
 
-  // 文テンプレート
   elSentence.innerHTML = "";
+  state.sel = {}; state.expected = {};
   elAccentsWrap.style.display = (level >= 2) ? "block" : "none";
 
-  if(level === 4){
-    renderLevel4();
-  }else{
-    renderTemplate(level);
-  }
+  if(level === 4){ renderLevel4(prob); }
+  else if(prob.kind === "qa"){ renderQA(prob); }
+  else { renderStatement(level, prob); }
 }
 
+/* --- 部品 --- */
 function addText(t, cls){
   const span = document.createElement("span");
   span.className = "tok " + (cls||"");
@@ -1069,47 +994,12 @@ function addText(t, cls){
   elSentence.appendChild(span);
   return span;
 }
-
-// Nivel 1〜3 共通テンプレート
-function renderTemplate(level){
-  const P = state.P;
-  if(P.prefix) addText("¿", "punct");
-
-  // --- 主語 ---
-  if(level === 1){
-    addBlankButton("subject", "主語", ()=>openSheet("主語を選ぶ", subjectChoices(P), v=>setSel("subject",v)));
-  }else{
-    addInput("subject", "主語", 7.5, false, true); // 文頭なので自動で大文字始まりに
-  }
-
-  // --- 否定 no ---
-  if(P.neg){
-    if(level === 1){
-      addFixedBox("no"); // 最初から確定済み（濃い字・通常の空欄と同じ枠）
-    }else{
-      addInput("no", "no", 3.4, true); // 空欄に no を手入力
-    }
-  }
-
-  // --- 動詞 ---
-  if(level === 1){
-    addBlankButton("verb", state.current.verb, ()=>openSheet("動詞を選ぶ", verbChoicesSameVerb(state.current, P), v=>setSel("verb",v)));
-  }else if(level === 2){
-    addInput("verb", "(" + state.current.verb + ")", 7.5); // 薄字で不定詞をヒント表示
-  }else{
-    addInput("verb", "動詞", 7.5);
-  }
-
-  // --- 目的語/場所 ---
-  if(level === 3){
-    addBlankButton("object", "____", ()=>openSheet("最後の空欄を選ぶ", objectChoices(state.current), v=>setSel("object",v)));
-  }else{
-    addText(P.object); // Nivel 1/2 は表示のみ
-  }
-
-  if(P.suffix) addText(P.suffix, "punct");
+function addSep(){
+  const sep = document.createElement("div");
+  sep.className = "qa-mark";
+  sep.textContent = "── 答え ──";
+  elSentence.appendChild(sep);
 }
-
 function addBlankButton(slot, label, onClick){
   const b = document.createElement("button");
   b.className = "blank-btn";
@@ -1118,43 +1008,37 @@ function addBlankButton(slot, label, onClick){
   b.addEventListener("click", ()=>{ if(!state.isAnswered) onClick(); });
   elSentence.appendChild(b);
 }
-
-// 最初から確定済みの空欄（Nivel 1 の no）：他の空欄と同じ枠・濃い字で表示するだけ
 function addFixedBox(text){
   const b = document.createElement("span");
   b.className = "blank-btn filled fixed";
   b.textContent = text;
   elSentence.appendChild(b);
 }
-
 function addInput(slot, ph, em, isNo, capFirst){
   const inp = document.createElement("input");
   inp.className = "blank-in" + (isNo ? " no-in" : "");
   inp.dataset.slot = slot;
   inp.type = "text"; inp.placeholder = ph;
-  inp.autocapitalize = "off"; inp.autocomplete = "off";
-  inp.autocorrect = "off"; inp.spellcheck = false;
+  inp.autocapitalize = "off"; inp.autocomplete = "off"; inp.autocorrect = "off"; inp.spellcheck = false;
   inp.style.width = em + "em";
   inp.addEventListener("focus", ()=>{ lastFocused = inp; });
   if(capFirst) autoCapFirst(inp);
   elSentence.appendChild(inp);
+  return inp;
 }
-
-function renderLevel4(){
-  elJa.textContent = state.current.ja;
-  const ta = document.createElement("textarea");
-  ta.className = "full-in";
-  ta.id = "full-in";
-  ta.placeholder = "スペイン語で全文を入力";
-  ta.autocapitalize = "off"; ta.autocomplete = "off";
-  ta.autocorrect = "off"; ta.spellcheck = false;
-  ta.addEventListener("focus", ()=>{ lastFocused = ta; });
-  autoCapFirst(ta); // 文頭（¿の後）の文字を自動で大文字化
-  // Nivel 4 は専用エリアに置く
-  elSentence.appendChild(ta);
+// 1回目のタップはヒントを出さず普通に入力させ、既にフォーカス済みの状態でもう1回タップしたらヒントを開く
+function addHintInput(slot, ph, em, choices){
+  const inp = addInput(slot, ph, em);
+  inp.classList.add("hint-in");
+  let wasFocused = false;
+  inp.addEventListener("mousedown", ()=>{ wasFocused = (document.activeElement === inp); });
+  inp.addEventListener("click", ()=>{
+    if(state.isAnswered) return;
+    if(wasFocused) openHint(inp, choices);
+  });
+  return inp;
 }
-
-// 入力欄の「文頭の文字」を自動で大文字化（¿ など先頭の記号はスキップ）。カーソル位置は維持。
+// 入力欄の先頭文字を自動で大文字化（¿ など先頭記号はスキップ）。カーソル位置は維持。
 function autoCapFirst(el){
   el.addEventListener("input", () => {
     const start = el.selectionStart, end = el.selectionEnd;
@@ -1170,23 +1054,107 @@ function autoCapFirst(el){
     }
   });
 }
-
 function setSel(slot, value){
   state.sel[slot] = value;
   const b = elSentence.querySelector('.blank-btn[data-slot="'+slot+'"]');
   if(b){ b.textContent = value; b.classList.add("filled"); }
 }
 
+/* --- Nivel 1・2：単文 --- */
+function renderStatement(level, prob){
+  const P = prob.P;
+  if(P.prefix) addText("¿", "punct");
+
+  // ① 主語
+  state.expected.subject = P.subject;
+  if(level === 1){
+    addBlankButton("subject", "主語", ()=>openSheet("主語を選ぶ", subjectChoices(P.subject), v=>setSel("subject",v)));
+  }else{
+    addInput("subject", "主語", 7.5, false, true);
+  }
+
+  // 否定 no
+  if(P.neg){
+    if(level === 1){ addFixedBox("no"); }
+    else { state.expected.no = "no"; addInput("no", "no", 3.4, true); }
+  }
+
+  // ② ser
+  state.expected.verb = P.verb;
+  if(level === 1){
+    addBlankButton("verb", "ser", ()=>openSheet("ser の活用を選ぶ", serChoices(P.verb), v=>setSel("verb",v)));
+  }else{
+    addInput("verb", "ser", 6.4);
+  }
+
+  // ③ 補語
+  state.expected.object = P.object;
+  if(level === 1){
+    addBlankButton("object", "", ()=>openSheet("補語を選ぶ", shuffle(prob.compChoices.slice()), v=>setSel("object",v)));
+  }else{
+    addHintInput("object", "", 7.5, prob.compChoices);
+  }
+
+  if(P.suffix) addText(P.suffix, "punct");
+}
+
+/* --- Nivel 3：一問一答（すべて入力。補語のみタップでヒント） --- */
+function renderQA(prob){
+  const q = prob.q, a = prob.a;
+
+  // 質問行
+  addText("¿", "punct");
+  if(q.subjES){
+    state.expected.q_subj = q.subjES;
+    addInput("q_subj", "主語", 6.4, false, true); // 文頭：大文字始まり
+  }
+  state.expected.q_ser = q.ser;
+  addInput("q_ser", "ser", 6.4, false, !q.subjES); // 主語省略時は文頭
+  state.expected.q_obj = q.comp;
+  addHintInput("q_obj", "", 7.5, q.compChoices);
+  addText("?", "punct");
+
+  addSep();
+
+  // 答え行
+  state.expected.a_yn = a.yn; // Sí / No
+  addInput("a_yn", "", 4.2, false, true);
+  addText(",", "punct");
+  if(a.neg){ state.expected.a_no = "no"; addInput("a_no", "", 3.4, true); }
+  state.expected.a_ser = a.ser;
+  addInput("a_ser", "ser", 6.4);
+  state.expected.a_obj = a.comp;
+  addHintInput("a_obj", "", 7.5, a.compChoices);
+  addText(".", "punct");
+}
+
+/* --- Nivel 4：質問文・答え文を全文入力 → 自己採点 --- */
+function renderLevel4(prob){
+  const mk = (id, labelText, ph) => {
+    const wrap = document.createElement("div");
+    wrap.className = "l4-field";
+    const lab = document.createElement("div");
+    lab.className = "l4-label"; lab.textContent = labelText;
+    const ta = document.createElement("textarea");
+    ta.className = "full-in"; ta.id = id; ta.placeholder = ph;
+    ta.autocapitalize = "off"; ta.autocomplete = "off"; ta.autocorrect = "off"; ta.spellcheck = false;
+    ta.addEventListener("focus", ()=>{ lastFocused = ta; });
+    autoCapFirst(ta);
+    wrap.appendChild(lab); wrap.appendChild(ta);
+    return wrap;
+  };
+  elSentence.appendChild(mk("full-q", "質問文（スペイン語）", "¿…?"));
+  elSentence.appendChild(mk("full-a", "答え文（スペイン語）", "Sí/No, …."));
+}
+
 
 /* =========================================================================
-   6. 選択肢シート
+   7. 選択肢シート／ヒント
    ========================================================================= */
 const overlay = $("overlay"), optsBox = $("opts"), sheetTitle = $("sheet-title");
-let sheetCb = null;
 
 function openSheet(title, options, cb){
   sheetTitle.textContent = title;
-  sheetCb = cb;
   optsBox.innerHTML = "";
   options.forEach(opt=>{
     const b = document.createElement("button");
@@ -1196,73 +1164,64 @@ function openSheet(title, options, cb){
   });
   overlay.classList.add("show");
 }
-function closeSheet(){ overlay.classList.remove("show"); }
+function closeSheet(){
+  overlay.classList.remove("show");
+  if(pendingHintInput){ const el = pendingHintInput; pendingHintInput = null; setTimeout(()=>{ try{ el.focus(); }catch(e){} }, 0); }
+}
+function openHint(inp, choices){
+  pendingHintInput = inp;
+  openSheet("ヒント（タップで入力・手入力も可）", shuffle(choices.slice()), v=>{ inp.value = v; });
+}
 overlay.addEventListener("click", e=>{ if(e.target === overlay) closeSheet(); });
 
 
 /* =========================================================================
-   7. 判定
+   8. 判定
    ========================================================================= */
-function getInput(slot){
-  const el = elSentence.querySelector('[data-slot="'+slot+'"]');
-  return el ? el.value : "";
-}
-function markInput(slot, ok){
-  const el = elSentence.querySelector('[data-slot="'+slot+'"]');
-  if(el){ el.classList.add(ok ? "is-ok" : "is-ng"); if(el.tagName==="INPUT"||el.tagName==="TEXTAREA") el.disabled = true; }
-}
-function markBlank(slot, ok){
-  const el = elSentence.querySelector('.blank-btn[data-slot="'+slot+'"]');
-  if(el){ el.classList.add(ok ? "is-ok" : "is-ng"); }
+function correctHTML(prob){
+  if(prob.kind === "qa"){
+    return '<strong>' + prob.esQ + '　──　' + prob.esA + '</strong><small>' + prob.jaQ + '　──　' + prob.jaA + '</small>';
+  }
+  return '<strong>' + prob.es + '</strong><small>' + prob.ja + '</small>';
 }
 
 function judge(){
   if(state.isAnswered) return;
-  const {level, P, current} = state;
-  let ok = true;
+  const {level} = state;
+  const prob = state.current;
 
-  if(level === 1){
-    const sOk = state.sel.subject === P.subject;
-    const vOk = state.sel.verb === P.verb;
-    markBlank("subject", sOk); markBlank("verb", vOk);
-    ok = sOk && vOk;
-  }
-  else if(level === 2){
-    const sOk = strictEqual(getInput("subject"), P.subject);
-    markInput("subject", sOk); ok = ok && sOk;
-    if(P.neg){ const nOk = strictEqual(getInput("no"), "no"); markInput("no", nOk); ok = ok && nOk; }
-    const vOk = strictEqual(getInput("verb"), P.verb);
-    markInput("verb", vOk); ok = ok && vOk;
-  }
-  else if(level === 3){
-    const sOk = strictEqual(getInput("subject"), P.subject);
-    markInput("subject", sOk); ok = ok && sOk;
-    if(P.neg){ const nOk = strictEqual(getInput("no"), "no"); markInput("no", nOk); ok = ok && nOk; }
-    const vOk = strictEqual(getInput("verb"), P.verb);
-    markInput("verb", vOk); ok = ok && vOk;
-    const oOk = state.sel.object === P.object;
-    markBlank("object", oOk); ok = ok && oOk;
-  }
-  else if(level === 4){
-    $("full-in").disabled = true;
+  if(level === 4){
+    const q = $("full-q"), a = $("full-a");
+    if(q) q.disabled = true;
+    if(a) a.disabled = true;
     elFeedback.className = "feedback show";
     elFeedback.style.background = "var(--paper)";
-    elFeedback.innerHTML = '正解はこちら：<span class="correct"><strong>' + state.current.es +
-      '</strong><small>' + state.current.ja + '</small></span>';
+    elFeedback.innerHTML = '正解はこちら：<span class="correct">' + correctHTML(prob) + '</span>';
     btnAnswer.style.display = "none";
     elSelfJudge.style.display = "";
-    return; // finishAnswer は自己採点ボタンから呼ぶ
+    btnRefVerb.hidden = false; btnRefPron.hidden = false;
+    return; // finishAnswer は自己採点ボタンから
   }
 
+  let ok = true;
+  for(const slot in state.expected){
+    const exp = state.expected[slot];
+    const btn = elSentence.querySelector('.blank-btn[data-slot="'+slot+'"]');
+    if(btn){
+      const good = state.sel[slot] === exp;
+      btn.classList.add(good ? "is-ok" : "is-ng");
+      ok = ok && good;
+    }else{
+      const inp = elSentence.querySelector('input[data-slot="'+slot+'"]');
+      if(inp){
+        const good = strictEqual(inp.value, exp);
+        inp.classList.add(good ? "is-ok" : "is-ng");
+        inp.disabled = true;
+        ok = ok && good;
+      }
+    }
+  }
   finishAnswer(ok);
-}
-
-let hintTimer = null;
-function flashHint(msg){
-  elHint.textContent = msg;
-  elHint.style.color = "var(--ng)";
-  clearTimeout(hintTimer);
-  hintTimer = setTimeout(()=>{ elHint.textContent = HINTS[state.level]; elHint.style.color = ""; }, 2200);
 }
 
 function finishAnswer(ok){
@@ -1272,11 +1231,11 @@ function finishAnswer(ok){
   elScore.textContent = "正解 " + state.scoreOK + " / " + state.scoreTotal + " 問";
 
   elFeedback.className = "feedback show " + (ok ? "ok" : "ng");
-  elFeedback.innerHTML = ok
-    ? '🎉 ¡Correcto! 正解！<span class="correct"><strong>' + state.current.es +
-      '</strong><small>' + state.current.ja + '</small></span>'
-    : '🙊 ¡Casi! 惜しい！正解はこちら：<span class="correct"><strong>' + state.current.es +
-      '</strong><small>' + state.current.ja + '</small></span>';
+  elFeedback.style.background = "";
+  elFeedback.innerHTML = (ok
+      ? '🎉 ¡Correcto! 正解！'
+      : '🙊 ¡Casi! 惜しい！正解はこちら：')
+    + '<span class="correct">' + correctHTML(state.current) + '</span>';
 
   setMascot(ok ? "happy" : "sad");
   if(ok) popConfetti();
@@ -1284,15 +1243,14 @@ function finishAnswer(ok){
   btnAnswer.style.display = "none";
   btnNext.style.display = "";
   btnAudio.disabled = false;
-  if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; } // Nivel 3/4 は解答後に参照ボタンを表示
+  if(state.level >= 3){ btnRefVerb.hidden = false; btnRefPron.hidden = false; }
   save();
 }
 
 
 /* =========================================================================
-   7.5 参照ビュー（主語人称代名詞・動詞活用表）
+   9. 参照ビュー（主語人称代名詞・serの活用）
    ========================================================================= */
-// 主語人称代名詞の表
 function buildPronounTable(){
   const c = (es, ja) => '<div class="row"><span class="es">'+es+'</span>'+(ja?'<span class="gloss">'+ja+'</span>':'')+'</div>';
   return ''
@@ -1313,34 +1271,31 @@ function buildPronounTable(){
     + '</div>';
 }
 
-// 動詞の活用表（語幹＋語尾。語尾を強調）
-function buildVerbTable(inf){
-  const stem = inf.slice(0, -2);
-  const cell = (prons, subjForForm) => {
-    const f = conjugate(inf, subjForForm);
-    const end = f.slice(stem.length);
+function buildSerTable(){
+  const cell = (prons, form) => {
     const pr = '<div class="stack">' + prons.map(p => '<span class="pron">('+p+')</span>').join('') + '</div>';
-    const es = '<span class="es">' + stem + '<span class="end">' + end + '</span></span>';
+    const es = '<span class="es">' + form + '</span>';
     return '<div class="conj-cell">' + pr + es + '</div>';
   };
   return ''
     + '<div class="ref-card">'
-    +   '<div class="ref-title"><span class="diamond">◇</span> ' + inf + '<small>（' + (VERB_JA[inf]||"") + '）の活用</small><button class="conj-audio" type="button" data-inf="' + inf + '" title="' + inf + 'の活用音声を再生"><span>🔊</span><span>音声</span></button></div>'
+    +   '<div class="ref-title"><span class="diamond">◇</span> ser<small>の活用</small><button class="conj-audio" type="button" data-inf="ser" title="serの活用音声を再生"><span>🔊</span><span>音声</span></button></div>'
     +   '<table class="conj-table">'
     +     '<thead><tr><th></th><th>単数</th><th>複数</th></tr></thead>'
     +     '<tbody>'
-    +       '<tr><th>1人称</th><td>'+cell(['yo'],'yo')+'</td><td>'+cell(['nosotros','nosotras'],'nosotros')+'</td></tr>'
-    +       '<tr><th>2人称</th><td>'+cell(['tú'],'tú')+'</td><td>'+cell(['vosotros','vosotras'],'vosotros')+'</td></tr>'
-    +       '<tr><th>3人称</th><td>'+cell(['él','ella','usted'],'él')+'</td><td>'+cell(['ellos','ellas','ustedes'],'ellos')+'</td></tr>'
+    +       '<tr><th>1人称</th><td>'+cell(['yo'],'soy')+'</td><td>'+cell(['nosotros','nosotras'],'somos')+'</td></tr>'
+    +       '<tr><th>2人称</th><td>'+cell(['tú'],'eres')+'</td><td>'+cell(['vosotros','vosotras'],'sois')+'</td></tr>'
+    +       '<tr><th>3人称</th><td>'+cell(['él','ella','usted'],'es')+'</td><td>'+cell(['ellos','ellas','ustedes'],'son')+'</td></tr>'
     +     '</tbody>'
     +   '</table>'
+    +   '<div class="ref-hint">ser は不規則活用。丸暗記しよう。</div>'
     + '</div>';
 }
 
 function openRef(type){
-  elRefContent.innerHTML = (type === "pron") ? buildPronounTable() : buildVerbTable(state.current.verb);
+  elRefContent.innerHTML = (type === "pron") ? buildPronounTable() : buildSerTable();
   const conjAudio = elRefContent.querySelector(".conj-audio[data-inf]");
-  if(conjAudio) conjAudio.addEventListener("click", ()=>playConjugationAudio(conjAudio.dataset.inf));
+  if(conjAudio) conjAudio.addEventListener("click", playSerAudio);
   elRefContent.querySelectorAll(".pron-audio").forEach(btn => {
     btn.addEventListener("click", ()=>playPronounAudio(btn.dataset.pronGroup));
   });
@@ -1351,55 +1306,43 @@ function closeRef(){ elRefview.classList.remove("show"); }
 
 
 /* =========================================================================
-   7.6 単語チェック（フラッシュカード）
+   10. 単語チェック（フラッシュカード・日→西のみ）
    ========================================================================= */
 const elVocabview = $("vocabview"), elFcPrompt = $("fc-prompt"), elFcAnswer = $("fc-answer"),
       elFcCat = $("fc-cat"),
       elFlashcard = $("flashcard"), elVocabPos = $("vocab-pos"), elVocabTotal = $("vocab-total");
 
-const vocab = { dir:"es", order:"seq", deck:[], pos:0 };
+const vocab = { dir:"ja", order:"seq", deck:[], pos:0 };
 
 function vocabBuildDeck(){
   const idx = VOCAB.map((_,i)=>i);
   vocab.deck = (vocab.order === "rand") ? shuffle(idx) : idx;
   vocab.pos = 0;
 }
-
 function vocabRender(){
   const w = VOCAB[vocab.deck[vocab.pos]];
-  const cat = w.g === undefined ? "（動詞）" : "（名詞）";
-  const tag = w.g ? '<span class="tag">[' + w.g + ']</span>' : '';
-  if(vocab.dir === "es"){
-    // 問い＝西語。品詞は答え（日本語）の上に表示（めくるまでネタバレしない）
+  if(vocab.dir === "es"){ // 無効（保険）
     elFcCat.textContent = "";
     elFcPrompt.textContent = w.es;
-    elFcAnswer.innerHTML = '<span class="fc-ans-cat">' + cat + '</span>' + tag + w.ja;
+    elFcAnswer.innerHTML = '<span class="fc-ans-cat">' + w.cat + '</span>' + w.ja;
   }else{
-    // 問い＝日本語。品詞は日本語の上に表示（ヒントとして最初から見える）
-    elFcCat.textContent = cat;
+    elFcCat.textContent = w.cat;
     elFcPrompt.textContent = w.ja;
-    elFcAnswer.innerHTML = w.es + (tag ? ' ' + tag : '');
+    elFcAnswer.innerHTML = w.es;
   }
-  elFlashcard.classList.remove("revealed"); // 表だけ表示
+  elFlashcard.classList.remove("revealed");
   elVocabPos.textContent = (vocab.pos + 1);
   elVocabTotal.textContent = VOCAB.length;
 }
-
 function vocabReveal(){ elFlashcard.classList.add("revealed"); }
 function vocabNext(){ vocab.pos = (vocab.pos + 1) % vocab.deck.length; vocabRender(); }
 function vocabPrev(){ vocab.pos = (vocab.pos - 1 + vocab.deck.length) % vocab.deck.length; vocabRender(); }
-
-function openVocab(){
-  vocabBuildDeck();
-  vocabRender();
-  elVocabview.classList.add("show");
-  elVocabview.scrollTop = 0;
-}
+function openVocab(){ vocabBuildDeck(); vocabRender(); elVocabview.classList.add("show"); elVocabview.scrollTop = 0; }
 function closeVocab(){ elVocabview.classList.remove("show"); }
 
 
 /* =========================================================================
-   8. イベント
+   11. イベント
    ========================================================================= */
 document.querySelectorAll("#levels button").forEach(b=>{
   b.addEventListener("click", ()=>{
@@ -1407,7 +1350,6 @@ document.querySelectorAll("#levels button").forEach(b=>{
     if(lv === state.level) return;
     state.level = lv;
     save();
-    // そのレベル独立のラウンドの現在問題を表示（各レベル25問）
     loadCurrent();
   });
 });
@@ -1424,25 +1366,25 @@ btnNext.addEventListener("click", nextQuestion);
 btnReset.addEventListener("click", resetAll);
 btnPrev.addEventListener("click", historyBack);
 btnSjOk.addEventListener("click", ()=>{
-  $("full-in").classList.add("is-ok");
+  const q = $("full-q"), a = $("full-a");
+  if(q) q.classList.add("is-ok");
+  if(a) a.classList.add("is-ok");
   elSelfJudge.style.display = "none";
-  elFeedback.style.background = "";
   finishAnswer(true);
 });
 btnSjNg.addEventListener("click", ()=>{
-  $("full-in").classList.add("is-ng");
+  const q = $("full-q"), a = $("full-a");
+  if(q) q.classList.add("is-ng");
+  if(a) a.classList.add("is-ng");
   elSelfJudge.style.display = "none";
-  elFeedback.style.background = "";
   finishAnswer(false);
 });
-btnAudio.addEventListener("click", ()=>playAudio(state.current));
+btnAudio.addEventListener("click", ()=>speak(currentSpeakText(state.current)));
 
-// 参照ビュー（主語人称代名詞・活用表）
 btnRefPron.addEventListener("click", ()=>openRef("pron"));
 btnRefVerb.addEventListener("click", ()=>openRef("verb"));
 $("ref-back").addEventListener("click", closeRef);
 
-// 単語チェック（フラッシュカード）
 $("btn-vocab").addEventListener("click", openVocab);
 $("vocab-back").addEventListener("click", closeVocab);
 elFlashcard.addEventListener("click", vocabReveal);
@@ -1450,22 +1392,23 @@ $("vocab-next").addEventListener("click", vocabNext);
 $("vocab-prev").addEventListener("click", vocabPrev);
 $("seg-dir").querySelectorAll("button").forEach(b=>{
   b.addEventListener("click", ()=>{
+    if(b.disabled) return;
     vocab.dir = b.dataset.dir;
     $("seg-dir").querySelectorAll("button").forEach(x=>x.classList.toggle("active", x===b));
-    vocabRender(); // 向きを変えて現在のカードを表に戻す
+    vocabRender();
   });
 });
 $("seg-order").querySelectorAll("button").forEach(b=>{
   b.addEventListener("click", ()=>{
     vocab.order = b.dataset.order;
     $("seg-order").querySelectorAll("button").forEach(x=>x.classList.toggle("active", x===b));
-    vocabBuildDeck(); vocabRender(); // 並びを変えて最初から
+    vocabBuildDeck(); vocabRender();
   });
 });
 
 // アクセント補助バー：直前にフォーカスした入力欄へ挿入
 elAccents.querySelectorAll("button").forEach(b=>{
-  b.addEventListener("mousedown", e=>e.preventDefault()); // フォーカスを奪わない
+  b.addEventListener("mousedown", e=>e.preventDefault());
   b.addEventListener("click", ()=>{
     const el = lastFocused;
     if(!el) return;
@@ -1486,7 +1429,7 @@ document.addEventListener("keydown", e=>{
 });
 
 /* =========================================================================
-   9. 起動
+   12. 起動
    ========================================================================= */
 load();
 loadCurrent();
