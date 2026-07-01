@@ -1,6 +1,6 @@
 {
-  "name": "スペイン語 文法トレーナー",
-  "short_name": "ES文法",
+  "name": "スペイン語学習アプリ ¡Yo hablo español!",
+  "short_name": "¡Yo hablo!",
   "description": "スペイン語の動詞活用と語順（肯定・否定・疑問）を練習する学習アプリ",
   "lang": "ja",
   "start_url": "./index.html",
