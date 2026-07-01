@@ -446,7 +446,7 @@
   <div class="hud">
     <div class="hud-bar">
       <div class="bar"><span class="bar-fill" id="progress-bar"></span></div>
-      <span class="hud-label"><span id="progress-word">進捗</span> <b id="progress">1 / 25</b></span>
+      <span class="hud-label"><span id="progress-word">進捗</span> <b id="progress">1 / 10</b></span>
     </div>
     <div class="hud-coin"><span class="coin-ico">⭐</span><b id="score">正解 0 / 0 問</b></div>
     <button class="btn-reset" id="btn-reset" title="進捗・スコアをリセット">↺</button>
@@ -501,7 +501,7 @@
     </div>
   </main>
 
-  <footer>1セット25問・ランダム出題　¡Mucho ánimo! 🍀</footer>
+  <footer>1セット10問・ランダム出題　¡Mucho ánimo! 🍀</footer>
 </div>
 
 <!-- 選択肢シート -->
@@ -847,7 +847,7 @@ function playPronounAudio(group){
    4. 状態とサイクル
    ========================================================================= */
 const SAVE_KEY = "es-trainer-v2"; // 仕様変更（25問ラウンド・レベル別）でキー更新
-const ROUND = 25;                 // 1ラウンドの出題数（全48問からランダム抽出）
+const ROUND = 10;                 // 1ラウンドの出題数（全48問からランダム抽出。2026-07-02に25→10問へ短縮）
 
 // 全48問からランダムに ROUND 問を選んだ出題キューを作る
 function newRoundQueue(){
@@ -872,7 +872,7 @@ const state = {
   P: null,
 };
 
-// 現在レベルのラウンド（無ければ新規25問を抽選）
+// 現在レベルのラウンド（無ければ新規10問を抽選）
 function curRound(){
   let r = state.rounds[state.level];
   if(!r || !Array.isArray(r.queue) || r.queue.length === 0){
@@ -899,7 +899,7 @@ function load(){
     if(d.rounds && typeof d.rounds === "object"){
       for(const lv of [1,2,3,4]){
         const r = d.rounds[lv];
-        if(r && Array.isArray(r.queue) && r.queue.length >= 1 && r.queue.length <= ROUND
+        if(r && Array.isArray(r.queue) && r.queue.length >= 1 && r.queue.length <= MASTER.length // 旧仕様（25問）の解きかけラウンドも継続可
            && r.queue.every(i => Number.isInteger(i) && i >= 0 && i < MASTER.length)){
           const len = r.queue.length;
           const answers = (Array.isArray(r.answers) && r.answers.length === len)
@@ -1343,7 +1343,7 @@ function startReview(wrongQueue){
   loadCurrent();
 }
 
-// 新しい25問ラウンドを開始
+// 新しい10問ラウンドを開始
 function startNewRound(){
   state.rounds[state.level] = makeRound(newRoundQueue());
   save();

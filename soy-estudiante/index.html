@@ -455,7 +455,7 @@
   <div class="hud">
     <div class="hud-bar">
       <div class="bar"><span class="bar-fill" id="progress-bar"></span></div>
-      <span class="hud-label"><span id="progress-word">進捗</span> <b id="progress">1 / 20</b></span>
+      <span class="hud-label"><span id="progress-word">進捗</span> <b id="progress">1 / 10</b></span>
     </div>
     <div class="hud-coin"><span class="coin-ico">⭐</span><b id="score">正解 0 / 0 問</b></div>
     <button class="btn-reset" id="btn-reset" title="進捗・スコアをリセット">↺</button>
@@ -510,7 +510,7 @@
     </div>
   </main>
 
-  <footer>1セット20問・自動生成　¡Mucho ánimo! 🍀</footer>
+  <footer>1セット10問・自動生成　¡Mucho ánimo! 🍀</footer>
 </div>
 
 <!-- 選択肢シート -->
@@ -833,7 +833,7 @@ function playSerAudio(){
    5. 状態とサイクル
    ========================================================================= */
 const SAVE_KEY = "ser-trainer-v1";
-const ROUND = 20;
+const ROUND = 10; // 2026-07-02に20→10問へ短縮
 
 function genForLevel(lv){ return (lv >= 3) ? genQA() : genStatement(); }
 function newRoundQueue(lv){ const q = []; for(let i=0;i<ROUND;i++) q.push(genForLevel(lv)); return q; }
@@ -880,7 +880,7 @@ function load(){
     if(d.rounds && typeof d.rounds === "object"){
       for(const lv of [1,2,3,4]){
         const r = d.rounds[lv];
-        if(r && Array.isArray(r.queue) && r.queue.length >= 1 && r.queue.length <= ROUND
+        if(r && Array.isArray(r.queue) && r.queue.length >= 1 && r.queue.length <= 20 // 旧仕様（20問）の解きかけラウンドも継続可
            && r.queue.every(p => p && (p.kind === "stmt" || p.kind === "qa"))){
           const len = r.queue.length;
           const answers = (Array.isArray(r.answers) && r.answers.length === len)
@@ -1360,7 +1360,7 @@ function startReview(wrongQueue){
   loadCurrent();
 }
 
-// 新しい20問ラウンドを開始
+// 新しい10問ラウンドを開始
 function startNewRound(){
   state.rounds[state.level] = makeRound(newRoundQueue(state.level));
   save();

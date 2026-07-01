@@ -7,7 +7,7 @@
 - **形態**：単一 `index.html`（ゼロビルド・依存なし・vanilla JS）。PWA対応（`manifest.json`）。
 - **親ランチャー**：`~/Documents/_MyProjects/アプリ制作/index.html`（仮タイトル「Papelito Español」）から `yo-hablo-espanol/` と `soy-estudiante/` を選択できる。各アプリのヘッダーに「選択」へ戻るボタンを追加済み。
 - **保存キー**：localStorage `ser-trainer-v1`（レベル・ラウンド・スコア）。
-- **1ラウンド**：20問（その場自動生成）。レベル別に独立したラウンド。
+- **1ラウンド**：10問（その場自動生成。2026-07-02に20→10問へ短縮）。レベル別に独立したラウンド。解きかけの旧20問ラウンドはそのまま最後まで解ける移行処理あり。
 - **音声**：文はその場生成のため端末の音声合成（Web Speech API, `es-ES`）で再生。主語人称代名詞表では `assets/audio/pronouns/singular.mp3` / `plural.mp3`、ser活用表では `assets/audio/conjugation/ser.mp3` を再生（失敗時は Web Speech API で代替）。文のMP3化は未使用（将来ElevenLabs等で追加＝任意）。読み上げ文字列は `currentSpeakText()` が `state.current.es`/`.esQ`/`.esA`（＝生成済みの正文）をそのまま読むだけなので、文生成ロジック側の修正（大文字化など）は自動で音声側にも反映される。UI文言（placeholder等）の変更は音声には無関係。
 - **判定**：Nivel 1〜3 は厳格一致（大小文字・アクセント・記号をそのまま比較）。Nivel 4 は自己採点。
 
@@ -32,9 +32,10 @@
 - 実装：完了（`index.html` / `manifest.json`）。ローカル動作確認済み。
 - 2026-07-02 の追加実装（ローカル検証済み）：
   1. 出題主語に Ellos/Ellas を追加（上記「設計判断」参照）
-  2. ラウンドサマリ画面（20問終了時に正解数・%・メッセージ・誤答一覧を表示）＋間違えた問題だけの復習ラウンド。ラウンド状態に `answers`（各問の正誤）を記録し、解答済み問題へ「← 前」で戻ると正誤つき表示（再採点なし・スコア二重カウント防止）。実装は yo-hablo-espanol と同一構造（詳細は同アプリの PROGRESS.md「設計メモ」）
+  2. ラウンドサマリ画面（1セット終了時に正解数・%・メッセージ・誤答一覧を表示）＋間違えた問題だけの復習ラウンド。ラウンド状態に `answers`（各問の正誤）を記録し、解答済み問題へ「← 前」で戻ると正誤つき表示（再採点なし・スコア二重カウント防止）。実装は yo-hablo-espanol と同一構造（詳細は同アプリの PROGRESS.md「設計メモ」）
   3. アプリアイコン（apple-touch-icon＋manifest icons、180/192/512px・学生証デザイン）
   4. ルート `sw.js` によるオフライン対応（HTMLはネットワーク優先・素材はキャッシュ優先。sw.js のバージョン管理不要で git push だけの更新手順を維持）
+  5. 1セットを20問→10問に短縮（達成感の頻度を優先。単語タイル並べモードの検討経緯は yo-hablo-espanol/PROGRESS.md「改善アイデア」参照）
 - 公開：Papelito Español に同梱して公開。学生配布用URLは `https://engon-jp.github.io/papelito-espanol/`、本アプリ直通は `https://engon-jp.github.io/papelito-espanol/soy-estudiante/index.html`。更新は親リポジトリ `https://github.com/engon-jp/papelito-espanol` で `git push` すれば反映される。
 - 下記の修正は親リポジトリ `papelito-espanol` にコミット・push済み（2026-07-01）。
   1. Nivel 1/2/3 の補語の四角を統一（点線枠・「補語」表記・「？」を削除し、実線の無地空欄に）
