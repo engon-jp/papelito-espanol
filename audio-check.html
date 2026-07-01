@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>音声確認ツール</title>
+<style>
+  body { font-family: sans-serif; max-width: 700px; margin: 0 auto; padding: 16px; background: #faf7f2; color: #333; }
+  h1 { font-size: 1.1rem; margin-bottom: 4px; }
+  p.note { font-size: .85rem; color: #888; margin: 0 0 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: .93rem; }
+  th { background: #e8ddd0; padding: 6px 10px; text-align: left; }
+  tr:nth-child(even) { background: #f5f0ea; }
+  td { padding: 6px 10px; vertical-align: middle; border-bottom: 1px solid #e5ddd0; }
+  td.num { width: 36px; font-weight: 700; color: #999; text-align: right; }
+  td.es { font-weight: 600; }
+  button.play {
+    background: #4a9a6a; color: #fff; border: none; border-radius: 20px;
+    padding: 4px 14px; font-size: .85rem; cursor: pointer; white-space: nowrap;
+  }
+  button.play:active { opacity: .75; }
+  button.play.playing { background: #c0392b; }
+  td.status { width: 80px; }
+  select.mark {
+    font-size: .82rem; border: 1px solid #ccc; border-radius: 4px; padding: 2px 4px;
+    background: #fff;
+  }
+  select.mark.ng { background: #fde; border-color: #e77; }
+  select.mark.ok { background: #dfd; border-color: #7a7; }
+  #summary { margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 8px; font-size: .9rem; display: none; }
+  #summary h2 { margin: 0 0 8px; font-size: 1rem; }
+  #summary ul { margin: 0; padding-left: 1.2em; }
+  #btn-summary { margin-top: 12px; padding: 8px 20px; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: .9rem; }
+</style>
+</head>
+<body>
+<h1>🔊 音声確認ツール（全48フレーズ）</h1>
+<p class="note">▶ を押して音声を聴き、テキストと一致しているか確認。ずれている場合は「✕ NG」に変えてください。</p>
+
+<table>
+  <thead><tr><th>#</th><th>スペイン語</th><th>再生</th><th>判定</th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<button id="btn-summary">NGリストを表示</button>
+<div id="summary">
+  <h2>⚠ 音声ミスマッチ一覧</h2>
+  <ul id="ng-list"></ul>
+</div>
+
+<script>
+const PHRASES = [
+  [1,"Yo hablo español."],
+  [2,"¿Tú hablas inglés?"],
+  [3,"Nosotros no hablamos japonés."],
+  [4,"Ellos hablan chino."],
+  [5,"Él no come tomates."],
+  [6,"Ella come un huevo."],
+  [7,"Nosotras comemos una naranja."],
+  [8,"Ellas no comen manzanas."],
+  [9,"Usted vive en Tokio."],
+  [10,"Él no vive en Madrid."],
+  [11,"¿Ustedes viven en Barcelona?"],
+  [12,"Vosotras vivís en Buenos Aires."],
+  [13,"Yo no estudio chino."],
+  [14,"Tú estudias español."],
+  [15,"Nosotros estudiamos inglés."],
+  [16,"Ustedes no estudian japonés."],
+  [17,"Ella bebe agua."],
+  [18,"¿Tú bebes vino?"],
+  [19,"Vosotros no bebéis cerveza."],
+  [20,"Ellos beben leche."],
+  [21,"Usted no abre la boca."],
+  [22,"Yo abro el paquete."],
+  [23,"Nosotros abrimos la ventana."],
+  [24,"Ellas no abren la puerta."],
+  [25,"Yo compro un coche."],
+  [26,"Tú no compras flores."],
+  [27,"¿Ustedes compran un regalo?"],
+  [28,"Vosotras compráis una bicicleta."],
+  [29,"Él no lee libros."],
+  [30,"Ella lee un periódico."],
+  [31,"Ustedes leen una revista."],
+  [32,"Ellos no leen novelas."],
+  [33,"Ella escribe cartas."],
+  [34,"Usted no escribe correos."],
+  [35,"¿Vosotros escribís una postal?"],
+  [36,"Ellas escriben un mensaje."],
+  [37,"Él habla español."],
+  [38,"Nosotros no hablamos inglés."],
+  [39,"Yo no como manzanas."],
+  [40,"Vosotros coméis un huevo."],
+  [41,"Tú vives en Madrid."],
+  [42,"Ellos no viven en Tokio."],
+  [43,"Él no bebe cerveza."],
+  [44,"Nosotras bebemos agua."],
+  [45,"Ella abre el paquete."],
+  [46,"Vosotras no abrís la puerta."],
+  [47,"¿Usted compra un regalo?"],
+  [48,"Ellas no escriben cartas."],
+];
+
+let currentAudio = null;
+let currentBtn = null;
+
+const tbody = document.getElementById("tbody");
+PHRASES.forEach(([id, es]) => {
+  const num = String(id).padStart(2,"0");
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td class="num">${id}</td>
+    <td class="es">${es}</td>
+    <td><button class="play" data-id="${num}">▶ ${num}</button></td>
+    <td class="status"><select class="mark" data-id="${id}">
+      <option value="ok">✔ OK</option>
+      <option value="ng">✕ NG</option>
+    </select></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+document.querySelectorAll("select.mark").forEach(sel => {
+  sel.addEventListener("change", () => {
+    sel.className = "mark " + sel.value;
+  });
+});
+
+document.querySelectorAll("button.play").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+    if (currentBtn) currentBtn.classList.remove("playing");
+    if (currentBtn === btn) { currentBtn = null; currentAudio = null; return; }
+    const id = btn.dataset.id;
+    const audio = new Audio(`assets/audio/phrase_${id}.mp3?v=${Date.now()}`);
+    audio.play();
+    btn.classList.add("playing");
+    currentAudio = audio;
+    currentBtn = btn;
+    audio.addEventListener("ended", () => { btn.classList.remove("playing"); currentAudio = null; currentBtn = null; });
+  });
+});
+
+document.getElementById("btn-summary").addEventListener("click", () => {
+  const ng = [...document.querySelectorAll("select.mark")]
+    .filter(s => s.value === "ng")
+    .map(s => {
+      const id = Number(s.dataset.id);
+      const es = PHRASES[id-1][1];
+      return `<li><strong>#${id}</strong>: ${es}</li>`;
+    });
+  const div = document.getElementById("summary");
+  const ul = document.getElementById("ng-list");
+  ul.innerHTML = ng.length ? ng.join("") : "<li>NGなし（すべて一致）</li>";
+  div.style.display = "";
+  div.scrollIntoView({behavior:"smooth"});
+});
+</script>
+</body>
+</html>

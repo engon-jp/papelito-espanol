@@ -451,10 +451,10 @@
     <div class="feedback" id="feedback"></div>
 
     <div class="self-judge" id="self-judge" style="display:none">
-      <p class="sj-label">あなたの答えを正解と比べて、自己採点してください。</p>
+      <p class="sj-label">正解を見て、自己採点しよう。</p>
       <div class="sj-btns">
-        <button class="btn sj-ok" id="btn-sj-ok">⭕ 正解だった</button>
-        <button class="btn sj-ng" id="btn-sj-ng">✕ 不正解だった</button>
+        <button class="btn sj-ok" id="btn-sj-ok">⭕ 正解</button>
+        <button class="btn sj-ng" id="btn-sj-ng">✕ 不正解</button>
       </div>
     </div>
 
@@ -1219,8 +1219,8 @@ function judge(){
     $("full-in").disabled = true;
     elFeedback.className = "feedback show";
     elFeedback.style.background = "var(--paper)";
-    elFeedback.innerHTML = '正解はこちら：<span class="correct">' + state.current.es +
-      '<small>' + state.current.ja + '</small></span>';
+    elFeedback.innerHTML = '正解はこちら：<span class="correct"><strong>' + state.current.es +
+      '</strong><small>' + state.current.ja + '</small></span>';
     btnAnswer.style.display = "none";
     elSelfJudge.style.display = "";
     return; // finishAnswer は自己採点ボタンから呼ぶ
@@ -1245,10 +1245,10 @@ function finishAnswer(ok){
 
   elFeedback.className = "feedback show " + (ok ? "ok" : "ng");
   elFeedback.innerHTML = ok
-    ? '🎉 ¡Correcto! 正解！<span class="correct">' + state.current.es +
-      '<small>' + state.current.ja + '</small></span>'
-    : '🙊 ¡Casi! 惜しい！正解はこちら：<span class="correct">' + state.current.es +
-      '<small>' + state.current.ja + '</small></span>';
+    ? '🎉 ¡Correcto! 正解！<span class="correct"><strong>' + state.current.es +
+      '</strong><small>' + state.current.ja + '</small></span>'
+    : '🙊 ¡Casi! 惜しい！正解はこちら：<span class="correct"><strong>' + state.current.es +
+      '</strong><small>' + state.current.ja + '</small></span>';
 
   setMascot(ok ? "happy" : "sad");
   if(ok) popConfetti();
