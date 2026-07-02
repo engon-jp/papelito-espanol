@@ -53,6 +53,9 @@
 - 音声のMP3化（ElevenLabs）：現状は生成方式（固定リストではない）を維持する方針が確定したため、全432通りを録音するのは非現実的。もし着手するなら「単語・パーツ単位で録音して読み上げ時につなげる」方式を検討する必要がある（要相談）。※PWAアイコン・Service Worker は 2026-07-02 に実装済み。
 - 「先生／米国人」の単語チェック表示形（現状 先生=profesor/profesora、米国人=男女同形）を要望で調整。
 
+## 派生アプリ
+- 本アプリをベースに **¿Cómo estás?**（estar 作文練習・`~/Documents/_MyProjects/アプリ制作/como-estas/`）を 2026-07-02 に作成。共通機能（サマリ/復習・ラウンド管理等）の修正はコピー方式のため両アプリに要反映。
+
 ## 資料の所在
 - このアプリのローカル保存先：`~/Documents/_MyProjects/アプリ制作/soy-estudiante/`（2026-07-01に `~/Documents/_MyProjects/soy-estudiante/` から移動）。
 - ベースにした既存アプリ：`~/Documents/_MyProjects/アプリ制作/yo-hablo-espanol/`（engon-jp/yo-hablo-espanol）。

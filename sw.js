@@ -25,6 +25,12 @@ const PRECACHE = [
   "./soy-estudiante/assets/icon-180.png",
   "./soy-estudiante/assets/icon-192.png",
   "./soy-estudiante/assets/icon-512.png",
+  "./como-estas/",
+  "./como-estas/index.html",
+  "./como-estas/manifest.json",
+  "./como-estas/assets/icon-180.png",
+  "./como-estas/assets/icon-192.png",
+  "./como-estas/assets/icon-512.png",
 ];
 
 self.addEventListener("install", (e) => {
