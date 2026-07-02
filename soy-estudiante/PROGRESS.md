@@ -36,6 +36,7 @@
   3. アプリアイコン（apple-touch-icon＋manifest icons、180/192/512px・学生証デザイン）
   4. ルート `sw.js` によるオフライン対応（HTMLはネットワーク優先・素材はキャッシュ優先。sw.js のバージョン管理不要で git push だけの更新手順を維持）
   5. 1セットを20問→10問に短縮（達成感の頻度を優先。単語タイル並べモードの検討経緯は yo-hablo-espanol/PROGRESS.md「改善アイデア」参照）
+  6. 効果音＋🔊/🔇ミュートトグルを追加（3アプリ共通実装。詳細は yo-hablo-espanol/PROGRESS.md と `アプリ制作/assets/sfx/README.md`）
 - 公開：Papelito Español に同梱して公開。学生配布用URLは `https://engon-jp.github.io/papelito-espanol/`、本アプリ直通は `https://engon-jp.github.io/papelito-espanol/soy-estudiante/index.html`。更新は親リポジトリ `https://github.com/engon-jp/papelito-espanol` で `git push` すれば反映される。
 - 下記の修正は親リポジトリ `papelito-espanol` にコミット・push済み（2026-07-01）。
   1. Nivel 1/2/3 の補語の四角を統一（点線枠・「補語」表記・「？」を削除し、実線の無地空欄に）
@@ -52,6 +53,7 @@
 - 画像生成（Atelier等）で水彩タッチのマスコット・背景を作り差し替え（yo-hablo-espanol と同じ Phase B）。
 - 音声のMP3化（ElevenLabs）：現状は生成方式（固定リストではない）を維持する方針が確定したため、全432通りを録音するのは非現実的。もし着手するなら「単語・パーツ単位で録音して読み上げ時につなげる」方式を検討する必要がある（要相談）。※PWAアイコン・Service Worker は 2026-07-02 に実装済み。
 - 「先生／米国人」の単語チェック表示形（現状 先生=profesor/profesora、米国人=男女同形）を要望で調整。
+- **音声生成の運用が刷新された（2026-07-02）**：今後の新規音声は `~/Documents/_MyProjects/音声生成_ElevenLabs/レシピ台帳.md` のレシピ3（標準声 Alice・premadeカテゴリでAPI自動生成可）が第一候補。本アプリの既存アセット（ser.mp3・人称代名詞2本）は現行の Ninoska 音声（Web UI手動生成・Freeプランではブロック済み、詳細は同台帳「旧標準」参照）のまま。Aliceへの一括差し替えは任意のタイミングで。
 
 ## 派生アプリ
 - 本アプリをベースに **¿Cómo estás?**（estar 作文練習・`~/Documents/_MyProjects/アプリ制作/como-estas/`）を 2026-07-02 に作成。共通機能（サマリ/復習・ラウンド管理等）の修正はコピー方式のため両アプリに要反映。

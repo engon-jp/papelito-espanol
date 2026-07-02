@@ -459,6 +459,7 @@
     </div>
     <div class="hud-coin"><span class="coin-ico">⭐</span><b id="score">正解 0 / 0 問</b></div>
     <button class="btn-reset" id="btn-reset" title="進捗・スコアをリセット">↺</button>
+    <button class="btn-reset" id="btn-mute" title="効果音のオン/オフ">🔊</button>
   </div>
 
   <nav class="levels" id="levels">
@@ -818,6 +819,26 @@ function playPronounAudio(group){
   }catch(e){ fallback(); }
 }
 
+/* 効果音（Kenney製CC0・3アプリ共通アセット ../assets/sfx/。ミュート設定も3アプリ共通） */
+const SFX_MUTE_KEY = "papelito-sfx-muted";
+const SFX = {};
+try{
+  SFX.ok      = new Audio("../assets/sfx/correct.m4a");
+  SFX.ng      = new Audio("../assets/sfx/incorrect.m4a");
+  SFX.fanfare = new Audio("../assets/sfx/fanfare.m4a");
+  SFX.ok.volume = 0.5; SFX.ng.volume = 0.45; SFX.fanfare.volume = 0.6;
+}catch(e){ /* 効果音が使えなくても本体機能に影響させない */ }
+
+function sfxMuted(){
+  try{ return localStorage.getItem(SFX_MUTE_KEY) === "1"; }catch(e){ return false; }
+}
+function playSfx(kind){
+  if(sfxMuted()) return;
+  const a = SFX[kind];
+  if(!a) return;
+  try{ a.currentTime = 0; a.play().catch(()=>{}); }catch(e){}
+}
+
 function playSerAudio(){
   let usedFallback = false;
   const fallback = ()=>{ if(!usedFallback){ usedFallback = true; speak("soy, eres, es, somos, sois, son"); } };
@@ -907,6 +928,7 @@ function loadCurrent(){
 function nextQuestion(){
   const r = curRound();
   r.pos++;
+  if(r.pos >= r.queue.length) playSfx("fanfare"); // ラウンド完走の瞬間だけ（サマリの再表示では鳴らさない）
   save();
   loadCurrent();
 }
@@ -1277,6 +1299,7 @@ function finishAnswer(ok){
       : '🙊 ¡Casi! 惜しい！正解はこちら：')
     + '<span class="correct">' + correctHTML(state.current) + '</span>';
 
+  playSfx(ok ? "ok" : "ng");
   setMascot(ok ? "happy" : "sad");
   if(ok) popConfetti();
 
@@ -1484,6 +1507,16 @@ function resetAll(){
 btnAnswer.addEventListener("click", judge);
 btnNext.addEventListener("click", nextQuestion);
 btnReset.addEventListener("click", resetAll);
+const btnMute = $("btn-mute");
+function renderMuteIcon(){
+  btnMute.textContent = sfxMuted() ? "🔇" : "🔊";
+  btnMute.title = sfxMuted() ? "効果音オフ中（タップでオン）" : "効果音オン中（タップでオフ）";
+}
+btnMute.addEventListener("click", ()=>{
+  try{ localStorage.setItem(SFX_MUTE_KEY, sfxMuted() ? "0" : "1"); }catch(e){}
+  renderMuteIcon();
+});
+renderMuteIcon();
 btnPrev.addEventListener("click", historyBack);
 btnSjOk.addEventListener("click", ()=>{
   const q = $("full-q"), a = $("full-a");
