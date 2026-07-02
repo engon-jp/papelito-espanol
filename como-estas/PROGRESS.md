@@ -7,7 +7,7 @@
 - **形態**：単一 `index.html`（ゼロビルド・依存なし・vanilla JS）。PWA対応（`manifest.json`・アイコン設定済み・ルート `sw.js` によるオフライン対応）。
 - **保存キー**：localStorage `estar-trainer-v1`（レベル・ラウンド・スコア・各問の正誤）。
 - **1ラウンド**：10問（その場自動生成）。レベル別に独立。サマリ画面＋間違えた問題の復習モードあり（実装は姉妹アプリと同一構造）。
-- **音声**：文はその場生成のため端末の音声合成（Web Speech API, `es-ES`）。主語人称代名詞表は `assets/audio/pronouns/{singular,plural}.mp3`（ElevenLabs音声・姉妹アプリからコピー）。**estar 活用表の `assets/audio/conjugation/estar.mp3` は未生成**（それまで音声合成で代替。ElevenLabs での生成は任意・後日）。
+- **音声**：文はその場生成のため端末の音声合成（Web Speech API, `es-ES`）。主語人称代名詞表は `assets/audio/pronouns/{singular,plural}.mp3`（ElevenLabs音声・姉妹アプリからコピー）。estar 活用表音声 `assets/audio/conjugation/estar.mp3` も配置済み（2026-07-02、Ninoska・ElevenLabs Web UI生成。設定は `~/Documents/_MyProjects/音声生成_ElevenLabs/レシピ台帳.md` レシピ2参照）。
 - **判定**：Nivel 1〜3 は厳格一致（大小文字・アクセント・記号）。Nivel 4 は自己採点。
 
 ## 設計判断（2026-07-02）
@@ -43,9 +43,9 @@
 
 ## 次のアクション
 - 語彙を教科書に合わせて微調整（遠藤さんからリストをもらう）。
-- `assets/audio/conjugation/estar.mp3` を ElevenLabs で生成・配置（任意）。
 - 画像生成（Atelier等）でのマスコット差し替えは姉妹アプリと同じ Phase B。
 
 ## 資料の所在
 - ベースにしたアプリ：`~/Documents/_MyProjects/アプリ制作/soy-estudiante/`（構造・共通機能の設計メモは同アプリと yo-hablo-espanol の PROGRESS.md 参照）。
 - 実装計画（設計協議の記録）：`~/.claude/plans/estar-joyful-stonebraker.md`（2026-07-02）。
+- 音声生成の設定・手順：`~/Documents/_MyProjects/音声生成_ElevenLabs/レシピ台帳.md`（ElevenLabs・Ninoska音声の再現用パラメータ、Freeプランの制約を記録）。
