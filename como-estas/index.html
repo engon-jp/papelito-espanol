@@ -605,17 +605,19 @@ function pairPartner(s){ for(const [a,b] of SUBJ_PAIRS){ if(s===a) return b; if(
 
 // 補語1：状態（無変化の副詞・慣用句）。日本語は述語の完成形で持つ。
 // q=疑問文で自然か、neg=否定文で自然か（不自然な組合せを出題しないためのフラグ）
+// basic:true は Nivel 1/2（4択・意味弁別）に出す語。muy bien は bien と紛らわしいため
+// Nivel 1/2 では出さず、手入力で正確さを問える Nivel 3/4（一問一答）専用にする。
 const STATES_INV = [
-  {es:"bien",     jaA:"元気です",       jaNeg:"元気ではありません",       jaQ:"元気ですか",       q:true,  neg:true},
-  {es:"muy bien", jaA:"とても元気です", jaNeg:"あまり元気ではありません", jaQ:"",                 q:false, neg:true},
-  {es:"mal",      jaA:"具合が悪いです", jaNeg:"具合は悪くありません",     jaQ:"具合が悪いですか", q:true,  neg:true},
-  {es:"regular",  jaA:"まあまあです",   jaNeg:"",                         jaQ:"",                 q:false, neg:false},
+  {es:"bien",     jaA:"元気です",       jaNeg:"元気ではありません",       jaQ:"元気ですか",       q:true,  neg:true,  basic:true},
+  {es:"muy bien", jaA:"とても元気です", jaNeg:"あまり元気ではありません", jaQ:"",                 q:false, neg:true,  basic:false},
+  {es:"mal",      jaA:"調子が悪いです", jaNeg:"調子は悪くありません",     jaQ:"調子が悪いですか", q:true,  neg:true,  basic:true},
+  {es:"regular",  jaA:"まあまあです",   jaNeg:"",                         jaQ:"",                 q:false, neg:false, basic:true},
 ];
 
 // 補語2：状態（形容詞・性数一致）。forms は 男単/女単/男複/女複。
 const STATES_ADJ = [
   {forms:{m_sg:"cansado",  f_sg:"cansada",  m_pl:"cansados",  f_pl:"cansadas"},  jaA:"疲れています",   jaNeg:"疲れていません",   jaQ:"疲れていますか"},
-  {forms:{m_sg:"contento", f_sg:"contenta", m_pl:"contentos", f_pl:"contentas"}, jaA:"うれしいです",   jaNeg:"うれしくありません", jaQ:"うれしいですか"},
+  {forms:{m_sg:"contento", f_sg:"contenta", m_pl:"contentos", f_pl:"contentas"}, jaA:"満足しています", jaNeg:"満足していません",   jaQ:"満足していますか"},
   {forms:{m_sg:"enfermo",  f_sg:"enferma",  m_pl:"enfermos",  f_pl:"enfermas"},  jaA:"病気です",       jaNeg:"病気ではありません", jaQ:"病気ですか"},
   {forms:{m_sg:"ocupado",  f_sg:"ocupada",  m_pl:"ocupados",  f_pl:"ocupadas"},  jaA:"忙しいです",     jaNeg:"忙しくありません",   jaQ:"忙しいですか"},
   {forms:{m_sg:"nervioso", f_sg:"nerviosa", m_pl:"nerviosos", f_pl:"nerviosas"}, jaA:"緊張しています", jaNeg:"緊張していません",   jaQ:"緊張していますか"},
@@ -642,7 +644,8 @@ function placeChoices(correct){
 
 // 補語を1つ選ぶ。kind: "state"（状態）/ "place"（場所）。gen,num は主語に一致。
 // needQ / needNeg：疑問文・否定文で使う場合 true（不自然な語を除外）
-function pickComplement(gen, num, kind, needQ, needNeg){
+// basicOnly：true なら Nivel 1/2 向けに muy bien を除外（bien と紛らわしい4択を避ける）
+function pickComplement(gen, num, kind, needQ, needNeg, basicOnly){
   if(kind === "place"){
     const p = PLACES[Math.floor(Math.random()*PLACES.length)];
     return { kind:"place", correct:p.es, choices:placeChoices(p.es),
@@ -651,11 +654,13 @@ function pickComplement(gen, num, kind, needQ, needNeg){
   // 状態：無変化 40% / 形容詞 60%
   if(Math.random() < 0.4){
     let pool = STATES_INV;
+    if(basicOnly) pool = pool.filter(s => s.basic);
     if(needQ)   pool = pool.filter(s => s.q);
     if(needNeg) pool = pool.filter(s => s.neg);
     if(pool.length){
       const s = pool[Math.floor(Math.random()*pool.length)];
-      return { kind:"state", correct:s.es, choices:STATES_INV.map(x => x.es),
+      const choicePool = basicOnly ? STATES_INV.filter(x => x.basic) : STATES_INV;
+      return { kind:"state", correct:s.es, choices:choicePool.map(x => x.es),
                jaA:s.jaA, jaNeg:s.jaNeg, jaQ:s.jaQ };
     }
     // 条件に合う無変化語が無ければ形容詞にフォールバック
@@ -667,15 +672,14 @@ function pickComplement(gen, num, kind, needQ, needNeg){
 
 // 単語チェック用の語彙（指定順・日→西のみ）。形容詞は男女単複4形すべて表示。
 const VOCAB = [
-  {ja:"〜にいる、〜の状態である", es:"estar", cat:"動詞（不規則）"},
   {ja:"どのように", es:"cómo", cat:"疑問詞"},
   {ja:"どこに", es:"dónde", cat:"疑問詞"},
-  {ja:"元気", es:"bien", cat:"状態（無変化）"},
-  {ja:"とても元気", es:"muy bien", cat:"状態（無変化）"},
-  {ja:"具合が悪い", es:"mal", cat:"状態（無変化）"},
-  {ja:"まあまあ", es:"regular", cat:"状態（無変化）"},
+  {ja:"元気", es:"bien", cat:"状態（副詞）"},
+  {ja:"とても元気", es:"muy bien", cat:"状態（副詞句）"},
+  {ja:"調子が悪い", es:"mal", cat:"状態（副詞）"},
+  {ja:"まあまあ", es:"regular", cat:"状態（副詞）"},
   {ja:"疲れている", es:"cansado / cansada / cansados / cansadas", cat:"状態（形容詞・男/女/男複/女複）"},
-  {ja:"うれしい、満足している", es:"contento / contenta / contentos / contentas", cat:"状態（形容詞・男/女/男複/女複）"},
+  {ja:"満足している", es:"contento / contenta / contentos / contentas", cat:"状態（形容詞・男/女/男複/女複）"},
   {ja:"病気だ", es:"enfermo / enferma / enfermos / enfermas", cat:"状態（形容詞・男/女/男複/女複）"},
   {ja:"忙しい", es:"ocupado / ocupada / ocupados / ocupadas", cat:"状態（形容詞・男/女/男複/女複）"},
   {ja:"緊張している", es:"nervioso / nerviosa / nerviosos / nerviosas", cat:"状態（形容詞・男/女/男複/女複）"},
@@ -744,7 +748,7 @@ function genStatement(){
   else { neg = true; mood = "stmt"; }
 
   const compKind = Math.random() < 0.5 ? "state" : "place";
-  const comp = pickComplement(subj.gen, subj.num, compKind, mood === "q", neg);
+  const comp = pickComplement(subj.gen, subj.num, compKind, mood === "q", neg, true); // Nivel 1/2：muy bien は出さない
 
   let ja;
   if(mood === "q") ja = subj.ja + "は" + comp.jaQ + "？";
@@ -1032,8 +1036,8 @@ let pendingHintInput = null; // ヒントシートを開いた入力欄
 
 const HINTS = {
   1:"空欄をタップして選びましょう",
-  2:"空欄に直接入力（補語はタップでヒント）。アクセントも正確に",
-  3:"疑問詞・estar・はい/いいえ は入力、補語はタップでヒント",
+  2:"空欄に直接入力（状態・場所の部分はタップでヒント）。アクセントも正確に",
+  3:"疑問詞・estarなどは入力、状態・場所の部分はタップでヒント",
   4:"質問文と答え文を全文スペイン語で書きましょう",
 };
 
@@ -1178,10 +1182,10 @@ function renderStatement(level, prob){
     addInput("verb", "estar", 7);
   }
 
-  // ③ 補語
+  // ③ 状態・場所
   state.expected.object = P.object;
   if(level === 1){
-    addBlankButton("object", "", ()=>openSheet("補語を選ぶ", shuffle(prob.compChoices.slice()), v=>setSel("object",v)));
+    addBlankButton("object", "", ()=>openSheet("状態・場所を選ぶ", shuffle(prob.compChoices.slice()), v=>setSel("object",v)));
   }else{
     addHintInput("object", "", 7.5, prob.compChoices);
   }
@@ -1189,7 +1193,7 @@ function renderStatement(level, prob){
   if(P.suffix) addText(P.suffix, "punct");
 }
 
-/* --- Nivel 3：一問一答（疑問詞型 / sí-no型。補語のみタップでヒント） --- */
+/* --- Nivel 3：一問一答（疑問詞型 / sí-no型。状態・場所の部分のみタップでヒント） --- */
 function renderQA(prob){
   const q = prob.q, a = prob.a;
 
@@ -1254,7 +1258,9 @@ function renderLevel4(prob){
     return wrap;
   };
   elSentence.appendChild(mk("full-q", "質問文（スペイン語）", "¿…?"));
-  elSentence.appendChild(mk("full-a", "答え文（スペイン語）", "Sí/No, …."));
+  // sí/no型の答えは Sí/No, … の形。疑問詞型（cómo/dónde）は Estoy… のように estar から始まるだけなので Sí/No は書かない。
+  const aPh = (prob.qKind === "sino") ? "Sí/No, …." : "….";
+  elSentence.appendChild(mk("full-a", "答え文（スペイン語）", aPh));
 }
 
 
